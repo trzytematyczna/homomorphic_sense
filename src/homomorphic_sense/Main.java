@@ -1,5 +1,6 @@
 package homomorphic_sense;
 
+import org.ejml.equation.Equation;
 import org.ejml.simple.SimpleMatrix;
 
 import ij.*;
