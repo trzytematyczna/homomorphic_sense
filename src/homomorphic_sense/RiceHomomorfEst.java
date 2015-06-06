@@ -169,8 +169,26 @@ public class RiceHomomorfEst {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	private static SimpleMatrix approxI1_I0(SimpleMatrix m) {
-		// TODO Auto-generated method stub
+	
+	private static SimpleMatrix approxI1_I0(SimpleMatrix z) {
+//		cont=(z<1.5);
+		SimpleMatrix cont = logic(z, 1.5, 5);
+//		z8=8.*z;
+		SimpleMatrix z8 = multipleM(z, 8);
+//
+//		Mn=1-3./z8-15./2./(z8).^2-(3*5*21)./6./(z8).^3;
+//		Md=1+1./z8+9./2./(z8).^2+(25*9)./6./(z8).^3;
+//		M=Mn./Md;
+//
+//		%K=find(isnan(M));
+//		%M(K)=besseli(1,z(K))./besseli(0,z(K));
+//
+//		if (sum(cont)>1)
+//		K=find(z<1.5);
+//		M(K)=besseli(1,z(K))./besseli(0,z(K));
+//		end
+//		K=find(z==0);
+//		M(K)=0;
 		return null;
 	}
 
@@ -268,7 +286,7 @@ public class RiceHomomorfEst {
 		return m;
 	}
 
-	private SimpleMatrix logic(SimpleMatrix m, double value, int type) {
+	private static SimpleMatrix logic(SimpleMatrix m, double value, int type) {
 		SimpleMatrix o = new SimpleMatrix(m.numRows(), m.numCols());
 		for (int i = 0; i < m.numRows(); i++) {
 			for (int j = 0; j < m.numCols(); i++) {
