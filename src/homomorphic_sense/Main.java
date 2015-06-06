@@ -7,8 +7,6 @@ import ij.*;
 import ij.io.Opener;
 import ij.plugin.TextReader;
 import ij.process.ImageProcessor;
-import ij.plugin.FFT;
-import ij.plugin.filter.FFTFilter; 
 
 
 public class Main {
@@ -30,14 +28,13 @@ public class Main {
 			}
 		}
 		
-		FFTFilter asd = new FFTFilter();
-		asd.run(mriIp);
-		
 		SimpleMatrix mri = new SimpleMatrix(mriD);
 		SimpleMatrix snr = new SimpleMatrix(snrD);
+		FFT ff = new FFT();
+		ff.fft(mri, false);
 		
 //		SimpleMatrix gaussian = RiceHomomorfEst.rice_hommomorf_est(mri, snr, 4.8, 2, RiceHomomorfEst.GAUSSIAN);
-//		SimpleMatrix rician = RiceHomomorfEst.rice_hommomorf_est(mri, snr, 4.8, 2, RiceHomomorfEst.RICIAN);
+		SimpleMatrix rician = RiceHomomorfEst.rice_hommomorf_est(mri, snr, 4.8, 2, RiceHomomorfEst.RICIAN, 3.0);
 		
 
 	}

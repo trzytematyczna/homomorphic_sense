@@ -20,9 +20,9 @@ public class RiceHomomorfEst {
 		-0.355237628488567,	0.149328280945610,	-0.0357861117942093,	
 		0.00497952893859122,	-0.000374756374477592,	1.18020229140092e-05}; 
 	
-	public static SimpleMatrix rice_hommomorf_est(SimpleMatrix In, SimpleMatrix SNR, double LPF, int Modo, int noiseType) {
+	public static SimpleMatrix rice_hommomorf_est(SimpleMatrix In, SimpleMatrix SNR, double LPF, int Modo, int noiseType, double winsize) {
 		
-		double [] Ws = {3,3};
+		double [] Ws = {winsize,winsize};
 		SimpleMatrix [] em_ml = em_ml_rice2D(In, 10, Ws);
 		SimpleMatrix M2 = em_ml[0];
 		SimpleMatrix Sigma_n = em_ml[1];
@@ -109,10 +109,6 @@ public class RiceHomomorfEst {
 		return res;
 	}
 
-	private static SimpleMatrix lpf(SimpleMatrix lPF1, double d, int i) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	private static SimpleMatrix correct_rice_gauss(SimpleMatrix SNR) {
 
@@ -158,6 +154,7 @@ public class RiceHomomorfEst {
 		int Ny = (ones.numCols()-1)/2;
 		SimpleMatrix It = new SimpleMatrix(Nx, Ny);
 		
+		
 				
 		
 		return null;
@@ -168,11 +165,16 @@ public class RiceHomomorfEst {
 		return null;
 	}
 
+	private static SimpleMatrix lpf(SimpleMatrix lPF1, double d, int i) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	private static SimpleMatrix approxI1_I0(SimpleMatrix m) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	//done
 	public static SimpleMatrix[] em_ml_rice2D(SimpleMatrix In, int N, double[] Ws) {
 		double prod = Ws[0]*Ws[1];
 		SimpleMatrix Mask = makeOnes((int)Ws[0], (int)Ws[1]);
