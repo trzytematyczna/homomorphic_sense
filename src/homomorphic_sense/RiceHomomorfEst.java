@@ -125,6 +125,11 @@ public class RiceHomomorfEst {
 		return null;
 	}
 
+	private static SimpleMatrix approxI1_I0(SimpleMatrix m) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	public static SimpleMatrix[] em_ml_rice2D(SimpleMatrix In, int N, double[] Ws) {
 		double prod = Ws[0]*Ws[1];
 		SimpleMatrix Mask = makeOnes((int)Ws[0], (int)Ws[1]);
@@ -138,18 +143,24 @@ public class RiceHomomorfEst {
 		SimpleMatrix a_k = filter2b(Mask,In.elementPower(In));
 		a_k = multipleM(a_k, 2.0);
 		a_k.elementPower(a_k).minus(filter2b(Mask,In.elementPower(4.0)));
-//		max
+		a_k = max(a_k,0.0);
 		a_k.elementPower(0.5);
 		
 //		sigma_k2=0.5.*max(filter2B(Mask,In.^2)-a_k.^2,0.01);
 		SimpleMatrix sigma_k2 = filter2b(Mask,In.elementPower(In));
 		sigma_k2.minus(a_k.elementPower(2.0));
-//		max
+		sigma_k2 = max(sigma_k2,0.01);
 		sigma_k2 = multipleM(sigma_k2, 0.5);
-		for(int i=1; i<N; i++){
-			
-		}
 		
+		for(int i=1; i<N; i++){
+			a_k = filter2b(Mask, approxI1_I0(a_k.elementMult(In).elementDiv(sigma_k2))).elementMult(In);
+			a_k = max(a_k,0);
+			sigma_k2 = filter2b(Mask, absM(In).elementPower(2));
+			sigma_k2 = multipleM(sigma_k2, 0.5);
+			sigma_k2.minus(divideM(a_k.elementPower(2),2.0));
+			sigma_k2 = max(sigma_k2, 0.01);
+		}
+			
 //		a_k=sqrt(sqrt(max(2.*filter2B(Mask,In.^2).^2-filter2B(Mask,In.^4),0)));
 //		sigma_k2=0.5.*max(filter2B(Mask,In.^2)-a_k.^2,0.01);
 //			
@@ -171,6 +182,31 @@ public class RiceHomomorfEst {
 		return res;
 	}
 	
+
+	private static SimpleMatrix max(SimpleMatrix m, double d) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private static SimpleMatrix divideM(SimpleMatrix m, double d) {
+		for (int i=0; i<m.numRows(); i++){
+			for (int j=0; j<m.numCols(); j++){
+				double val = m.get(i, j)/d;
+				m.set(i, j, val);
+			}
+		}
+		return m;
+	}
+
+	private static SimpleMatrix absM(SimpleMatrix m) {
+		for (int i=0; i<m.numRows(); i++){
+			for (int j=0; j<m.numCols(); j++){
+				m.set(i, j, Math.abs(m.get(i, j)));
+			}
+		}
+		return m;
+	}
+
 	private static SimpleMatrix multipleM(SimpleMatrix m, double v){
 		for (int i=0; i<m.numRows(); i++){
 			for (int j=0; j<m.numCols(); j++){
