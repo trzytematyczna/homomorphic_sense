@@ -1,5 +1,7 @@
 package homomorphic_sense;
 
+import java.util.LinkedList;
+
 import org.ejml.equation.Equation;
 import org.ejml.equation.ManagerTempVariables;
 import org.ejml.equation.Operation;
@@ -14,11 +16,13 @@ public class RiceHomomorfEst {
 
 	static int GAUSSIAN = 1;
 	static int RICIAN = 2;
+	static double[] coeffs = {-0.289549906258443,	-0.0388922575606330,	0.409867108141953,	
+		-0.355237628488567,	0.149328280945610,	-0.0357861117942093,	
+		0.00497952893859122,	-0.000374756374477592,	1.18020229140092e-05}; 
 	
-	
-	public static SimpleMatrix rice_hommomorf_est(SimpleMatrix In, SimpleMatrix SNR, double LPF, int Modo, int noiseType) {
+	public static SimpleMatrix rice_hommomorf_est(SimpleMatrix In, SimpleMatrix SNR, double LPF, int Modo, int noiseType, double winsize) {
 		
-		double [] Ws = {3,3};
+		double [] Ws = {winsize,winsize};
 		SimpleMatrix [] em_ml = em_ml_rice2D(In, 10, Ws);
 		SimpleMatrix M2 = em_ml[0];
 		SimpleMatrix Sigma_n = em_ml[1];
@@ -105,18 +109,54 @@ public class RiceHomomorfEst {
 		return res;
 	}
 
-	private static SimpleMatrix lpf(SimpleMatrix lPF1, double d, int i) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
-	private static SimpleMatrix correct_rice_gauss(SimpleMatrix sNR) {
-		// TODO Auto-generated method stub
-		return null;
+	private static SimpleMatrix correct_rice_gauss(SimpleMatrix SNR) {
+
+		//Fc=Coefs(1)+Coefs(2).*a1+Coefs(3).*a1.^2+Coefs(4).*a1.^3+Coefs(5).*a1.^4+Coefs(6).*a1.^5+Coefs(7).*a1.^6+Coefs(8).*a1.^7+Coefs(9).*a1.^8;
+		//
+		//Fc=Fc.*(a1<=7);       
+
+		SimpleMatrix Fc = new SimpleMatrix(SNR.numRows(), SNR.numCols());
+		Fc = multipleM(SNR, coeffs[1]);
+		Fc.plus(coeffs[0]).plus(multipleM(SNR.elementPower(2), coeffs[2])).plus(multipleM(SNR.elementPower(3), coeffs[3])).plus(multipleM(SNR.elementPower(4), coeffs[4])).plus(multipleM(SNR.elementPower(5), coeffs[5])).plus(multipleM(SNR.elementPower(6), coeffs[6])).plus(multipleM(SNR.elementPower(7), coeffs[7])).plus(multipleM(SNR.elementPower(8), coeffs[8]));
+		
+		for (int i=0; i<Fc.numRows(); i++){
+			for (int j=0; j<Fc.numCols(); j++){
+				double snr_val = SNR.get(i, j);
+				if(snr_val <=7){
+					Fc.set(i, j, Fc.get(i, j)*snr_val);
+				}
+			}
+		}
+		
+		return Fc;
 	}
 
 	private static SimpleMatrix filter2b(SimpleMatrix ones, SimpleMatrix in) {
-		// TODO Auto-generated method stub
+//		[Mx, My]=size(h);
+//		if (rem(Mx,2)==0)||(rem(My,2)==0)
+//		        error('h size must be odd');
+//		end
+//
+//		Nx=(Mx-1)/2;
+//		Ny=(My-1)/2;
+//		It=padarray(I, [Nx,Ny], 'replicate');
+//		%It=im_expand(I,Nx,Ny);
+//
+//		I2=filter2(h,It);
+//		I_out=I2((Nx+1):end-Nx,(Ny+1):end-Ny);		
+		if(ones.numRows() % 2 == 0 || ones.numCols() % 2 == 0){
+			System.err.println("filter2b size of h must be odd");
+			return null;
+		}
+		
+		int Nx = (ones.numRows()-1)/2;
+		int Ny = (ones.numCols()-1)/2;
+		SimpleMatrix It = new SimpleMatrix(Nx, Ny);
+		
+		
+				
+		
 		return null;
 	}
 
@@ -125,11 +165,16 @@ public class RiceHomomorfEst {
 		return null;
 	}
 
+	private static SimpleMatrix lpf(SimpleMatrix lPF1, double d, int i) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	private static SimpleMatrix approxI1_I0(SimpleMatrix m) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	//done
 	public static SimpleMatrix[] em_ml_rice2D(SimpleMatrix In, int N, double[] Ws) {
 		double prod = Ws[0]*Ws[1];
 		SimpleMatrix Mask = makeOnes((int)Ws[0], (int)Ws[1]);
@@ -154,7 +199,7 @@ public class RiceHomomorfEst {
 		
 		for(int i=1; i<N; i++){
 			a_k = filter2b(Mask, approxI1_I0(a_k.elementMult(In).elementDiv(sigma_k2))).elementMult(In);
-//			a_k = max(a_k,0);
+			a_k = max(a_k,0);
 			sigma_k2 = filter2b(Mask, absM(In).elementPower(2));
 			sigma_k2 = multipleM(sigma_k2, 0.5);
 			sigma_k2.minus(divideM(a_k.elementPower(2),2.0));
