@@ -28,20 +28,9 @@ public class Main {
 		
 		SimpleMatrix mri = new SimpleMatrix(mriD);
 		SimpleMatrix snr = new SimpleMatrix(snrD);
-
-//		double[] a1 = {1, 2};
-//		double[] a2 = {3, 4};
-//		double[][] d1 = {a1,a2};
-//		double[][] d2 = {a1,a1};
-//		SimpleMatrix x = new SimpleMatrix(d1);
-//		SimpleMatrix y = new SimpleMatrix(d2);
-//		System.out.println(x.get(1, 0));
-//		System.out.println(y.get(1,0));
-//		System.out.println(x.elementMult(y));
-//		System.out.println(x.mult(y));
 		
-//		SimpleMatrix gaussian = RiceHomomorfEst.rice_hommomorf_est(mri, snr, 4.8, 2, RiceHomomorfEst.GAUSSIAN);
-//		SimpleMatrix rician = RiceHomomorfEst.rice_hommomorf_est(mri, snr, 4.8, 2, RiceHomomorfEst.RICIAN);
+		SimpleMatrix gaussian = RiceHomomorfEst.rice_hommomorf_est(mri, snr, 4.8, 2, RiceHomomorfEst.GAUSSIAN);
+		SimpleMatrix rician = RiceHomomorfEst.rice_hommomorf_est(mri, snr, 4.8, 2, RiceHomomorfEst.RICIAN);
 		
 
 	}
