@@ -222,5 +222,40 @@ public class RiceHomomorfEst {
 		}
 		return m;
 	}
+
+	private SimpleMatrix logic(SimpleMatrix m, double value, int type) {
+		SimpleMatrix o = new SimpleMatrix(m.numRows(), m.numCols());
+		for (int i = 0; i < m.numRows(); i++) {
+			for (int j = 0; j < m.numCols(); i++) {
+				switch (type) {
+				case 1:
+					if (m.get(i, j) == value) o.set(i, j, 1);
+					else o.set(i, j, 0);
+					break;
+				case 2:
+					if (m.get(i, j) != value) o.set(i, j, 1);
+					else o.set(i, j, 0);
+					break;
+				case 3:
+					if (m.get(i, j) > value) o.set(i, j, 1);
+					else o.set(i, j, 0);
+					break;
+				case 4:
+					if (m.get(i, j) >= value) o.set(i, j, 1);
+					else o.set(i, j, 0);
+					break;
+				case 5:
+					if (m.get(i, j) < value) o.set(i, j, 1);
+					else o.set(i, j, 0);
+					break;
+				case 6:
+					if (m.get(i, j) <= value) o.set(i, j, 1);
+					else o.set(i, j, 0);
+					break;
+				}
+			}
+		}
+		return o;
+	}
 	
 }
