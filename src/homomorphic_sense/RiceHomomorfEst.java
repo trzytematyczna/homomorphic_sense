@@ -34,7 +34,6 @@ public class RiceHomomorfEst {
 		
 		SimpleMatrix LocalMean;
 		SimpleMatrix Rn;
-		SimpleMatrix lRn = new SimpleMatrix();
 		SimpleMatrix LPF1;
 		SimpleMatrix LPF2;
 		SimpleMatrix Fc1;
@@ -52,6 +51,7 @@ public class RiceHomomorfEst {
 				LocalMean = new SimpleMatrix(zero);
 			}
 			Rn = In.minus(LocalMean);
+			SimpleMatrix lRn = new SimpleMatrix(Rn.numRows(), Rn.numCols());
 			
 			for (int i=0; i<Rn.numRows(); i++){
 				for (int j=0; j<Rn.numCols(); j++){
@@ -136,16 +136,20 @@ public class RiceHomomorfEst {
 		
 //		a_k=sqrt(sqrt(max(2.*filter2B(Mask,In.^2).^2-filter2B(Mask,In.^4),0)));
 		SimpleMatrix a_k = filter2b(Mask,In.elementPower(In));
+		a_k = multipleM(a_k, 2.0);
 		a_k.elementPower(a_k).minus(filter2b(Mask,In.elementPower(4.0)));
-		for (int i=0; i<a_k.numRows(); i++){
-			for (int j=0; j<a_k.numCols(); j++){
-				double val = a_k.get(i, j)*2;
-				a_k.set(i, j, val);
-			}
+//		max
+		a_k.elementPower(0.5);
+		
+//		sigma_k2=0.5.*max(filter2B(Mask,In.^2)-a_k.^2,0.01);
+		SimpleMatrix sigma_k2 = filter2b(Mask,In.elementPower(In));
+		sigma_k2.minus(a_k.elementPower(2.0));
+//		max
+		sigma_k2 = multipleM(sigma_k2, 0.5);
+		for(int i=1; i<N; i++){
+			
 		}
 		
-		SimpleMatrix sigma_k2 = filter2b(Mask,In.elementPower(In));
-		sigma_k2.elementPower(2).minus(a_k.elementPower(2.0));
 //		a_k=sqrt(sqrt(max(2.*filter2B(Mask,In.^2).^2-filter2B(Mask,In.^4),0)));
 //		sigma_k2=0.5.*max(filter2B(Mask,In.^2)-a_k.^2,0.01);
 //			
@@ -159,11 +163,22 @@ public class RiceHomomorfEst {
 //		
 //		 Signal=a_k;
 //		Sigma_n=sqrt(sigma_k2);
+		
 		SimpleMatrix[] res = new SimpleMatrix[2];
-		res[0] = new SimpleMatrix();
-		res[1] = new SimpleMatrix();
+		res[0] = a_k;
+		res[1] = sigma_k2.elementPower(0.5);
 		
 		return res;
+	}
+	
+	private static SimpleMatrix multipleM(SimpleMatrix m, double v){
+		for (int i=0; i<m.numRows(); i++){
+			for (int j=0; j<m.numCols(); j++){
+				double val = m.get(i, j)*v;
+				m.set(i, j, val);
+			}
+		}
+		return m;
 	}
 	
 }
