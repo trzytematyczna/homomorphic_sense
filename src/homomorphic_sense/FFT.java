@@ -10,7 +10,6 @@ import ij.process.ImageProcessor;
 
 public class FFT {
 
-	private ImagePlus imp;
 	private float[] C;
 	private float[] S;
 	
@@ -19,8 +18,6 @@ public class FFT {
 		
 		ImageProcessor ip = new FloatProcessor(sm.numRows(), sm.numCols(), sm.getMatrix().data);
 		
-		//IJ.write("fft: "+inverse);
-		//new ImagePlus("Input", ip.crop()).show();
 		int maxN = ip.getWidth();
 		makeSinCosTables(maxN);
 		float[] fht = (float[])ip.getPixels();
