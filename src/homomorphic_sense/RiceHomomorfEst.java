@@ -154,7 +154,7 @@ public class RiceHomomorfEst {
 		
 		for(int i=1; i<N; i++){
 			a_k = filter2b(Mask, approxI1_I0(a_k.elementMult(In).elementDiv(sigma_k2))).elementMult(In);
-			a_k = max(a_k,0);
+//			a_k = max(a_k,0);
 			sigma_k2 = filter2b(Mask, absM(In).elementPower(2));
 			sigma_k2 = multipleM(sigma_k2, 0.5);
 			sigma_k2.minus(divideM(a_k.elementPower(2),2.0));
@@ -184,8 +184,14 @@ public class RiceHomomorfEst {
 	
 
 	private static SimpleMatrix max(SimpleMatrix m, double d) {
-		// TODO Auto-generated method stub
-		return null;
+		for (int i = 0; i < m.numRows(); i++) {
+			for (int j = 0; j < m.numCols(); j++) {
+				if (m.get(i,j) < d) {
+					m.set(i, j, d);
+				}
+			}
+		}
+		return m;
 	}
 
 	private static SimpleMatrix divideM(SimpleMatrix m, double d) {
