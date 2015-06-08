@@ -14,37 +14,32 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 
 	static int GAUSSIAN = 1;
 	static int RICIAN = 2;
-	int ex_filter_type = 1;     //# 1 - local mean, 
+	static int ex_filter_type = 1;     //# 1 - local mean, 
 //            # 2 - expectation-maximization (EM).
-	int ex_window_size =5; //# window size for E{X},
-	int ex_iterations= 10;  //   # number of iterations of the EM algorithm (used only by EM),
-	double lpf_f = 3.4;    //        # sigma for LPF filter,
-	double lpf_f_SNR = 1.2;  //      # sigma for LPF filter; used to smooth sigma(x) in SNR,
-	double lpf_f_Rice= 5.4;       //# sigma for LPF filter; used to smooth Rician corrected noise map,
-	String input_filename = "MR_noisy.csv";                    //# Noisy MR image,
-	String input_filenameSNR = "MR_SNR.csv";  //                  # Noisy MR image,
-	String output_filename_Gaussian = "MR_Gaussian_Map.csv";   //# estimated noise map for Gaussian case,
-	String output_filename_Rician = "MR_Rician_Map.csv"  ;//    # estimated noise map for Rician case,
+	static int ex_window_size =5; //# window size for E{X},
+	static int ex_iterations= 10;  //   # number of iterations of the EM algorithm (used only by EM),
+	static double lpf_f = 3.4;    //        # sigma for LPF filter,
+	static double lpf_f_SNR = 1.2;  //      # sigma for LPF filter; used to smooth sigma(x) in SNR,
+	static double lpf_f_Rice= 5.4;       //# sigma for LPF filter; used to smooth Rician corrected noise map,
+	static String input_filename = "MR_noisy.csv";                    //# Noisy MR image,
+	static String input_filenameSNR = "MR_SNR.csv";  //                  # Noisy MR image,
+	static String output_filename_Gaussian = "MR_Gaussian_Map.csv";   //# estimated noise map for Gaussian case,
+	static String output_filename_Rician = "MR_Rician_Map.csv"  ;//    # estimated noise map for Rician case,
 	
 	
-	int LT =1;
-	int	GT= 2;
-	int	EQ =3;
-	int	LOE = 4;
-	int	GOE =5;
+	static int LT =1;
+	static int	GT= 2;
+	static int	EQ =3;
+	static int	LOE = 4;
+	static int	GOE =5;
+	static int	NEQ =6;
 	
 	@Override
 	public void run(ImageProcessor arg0) {
 		TextReader textReader = new TextReader();
 		ImageProcessor mriIp = textReader.open("res/MR_noisy.csv");
 		ImageProcessor snrIp = textReader.open("res/MR_SNR.csv");
-		ImagePlus asd = new ImagePlus();
-	    NewImage.createFloatImage("asd", 2, 2, 2, 2);
-	    float[] jedne = {1,1,1,1,1,1};
-	    float[] dwa = {1,1,1,1,1,1};
-	    float[][] www = {jedne,dwa};
-	   ImageProcessor asdasd = new FloatProcessor(www);
-//				ImagePlus("asd", mriIp);
+		rice_hommomorf_est(mriIp, snrIp, RiceHommomorfEst_.lpf_f, ex_filter_type,??, ex_window_size);
 	}
 
 	@Override
@@ -84,7 +79,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 		Sigma_n = lpf(Sigma_n,1.2);
 		
-		M1 = filter2b(new FloatProcessor().createProcessor(5, 5). ImageProcessor.ones(5, 5), In);
+		M1 = filter2b(createImage(5, 5, 0.25), In);
 		
 		if(SNR.getHeight() == 1 && SNR.getHeight() == 0){
 			SNR = divide(M2, Sigma_n);
@@ -104,7 +99,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 				LocalMean = M2;
 			}
 			else{
-				LocalMean = new ImageProcessor();
+				LocalMean = createImage(In.getWidth(), In.getHeight(), 0);
 			}
 			
 			Rn = absdiff(In, M1);
@@ -157,7 +152,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 
 	private static ImageProcessor filter2b(ImageProcessor h, ImageProcessor I) {
-		
+		//TODO
+
 		int Mx = h.getHeight();
 		int My = h.getWidth();
 //		System.out.println(Mx);
@@ -181,16 +177,17 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 	}
 
-	private static ImageProcessor padarray(ImageProcessor in, int nx, int ny) {
+	private static ImageProcessor padarray(ImageProcessor in, int nx, int ny) { //chyba done
 		int rows = in.getHeight() + nx * in.getHeight();
 		int cols = in.getWidth() + ny * in.getWidth();
-		ImageProcessor output = new ImageProcessor(rows, cols, in.type());
-//		for (int i = 0; i < rows; i++) {
-//			for (int j = 0; j < cols; j++) {
-//				double value = in.get(i / (1 + nx), j / (1 + ny));
-//				output.set(i, j, value);
-//			}
-//		}
+		float[][] outf = new float[rows][cols];
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				float value = in.get(i / (1 + nx), j / (1 + ny));
+				outf[i][j]= value;
+			}
+		}
+		ImageProcessor output = new FloatProcessor(outf);
 		return output;
 	}
 
@@ -200,6 +197,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 
 	private static ImageProcessor lpf(ImageProcessor I, double sigma, int MODO) {
+		//TODO
+
 		if (MODO == 1) {
 			int Mx = I.getHeight();
 			int My = I.getWidth();
@@ -252,8 +251,10 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	private static ImageProcessor approxI1_I0(ImageProcessor z) {
+		//TODO: finish
+
 //		cont=(z<1.5);
-		ImageProcessor cont = compare(z, 1.5, Core.CMP_LE);
+		ImageProcessor cont = compare(z, 1.5, RiceHommomorfEst_.LOE);
 //		z8=8.*z;
 		ImageProcessor z8 = multiply(z, 8);
 
@@ -283,7 +284,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		int Mx = In.getHeight();
 		int My = In.getWidth();
 		
-		double prod = Ws[0] * Ws[1];
+		float prod = Ws[0] * Ws[1];
 		ImageProcessor Mask = divide(createImage(Ws[1],Ws[0], 1.0), prod);
 		
 //		a_k=sqrt(sqrt(max(2.*filter2B(Mask,In.^2).^2-filter2B(Mask,In.^4),0)));
@@ -311,6 +312,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	private static void fftshift(ImageProcessor mat) {
+		//TODO
+
 //		ImageProcessor m1 = mat.rowRange(0, 0).colRange(mat.getHeight() / 2, mat.getWidth() / 2);
 //		ImageProcessor m2 = mat.rowRange(0, mat.getWidth() / 2).colRange(mat.getHeight() / 2, mat.getWidth() / 2);
 //		ImageProcessor m3 = mat.rowRange(mat.getHeight() / 2, 0).colRange(mat.getHeight() / 2, mat.getWidth() / 2);
@@ -345,6 +348,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	private static ImageProcessor fft(ImageProcessor ip) {
+		//TODO
+
 		
 	}
 	
@@ -359,12 +364,13 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return ip;
 	}
 	
-	private static ImageProcessor absdiff(ImageProcessor in, ImageProcessor m1) {
-		return null;
+	private static ImageProcessor absdiff(ImageProcessor mat1, ImageProcessor mat2) {
+		return abs(substract(mat1, mat2));
 	}
 	
 
 	private static ImageProcessor filter2(ImageProcessor mat1, ImageProcessor mat2) {
+		//TODO
 		ImageProcessor out = new ImageProcessor(mat1.getHeight(), mat1.getWidth(), mat1.type());
 		Imgproc.filter2D(mat1, out, -1, mat2);
 		return out;
@@ -433,18 +439,18 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return max;
 	}
 	
-	private static ImageProcessor max(ImageProcessor mat, double value) { //chyba done
-		float max = Integer.MIN_VALUE;
-		float[][] outf = new float[1][mat.getHeight()];
-		for(int j=0; j<mat.getHeight();j++){
-			for(int i=0; i<mat.getWidth();i++){
-				float val =mat.getPixelValue(i, j);
-				if(max < val){
-					max = val;
+	private static ImageProcessor max(ImageProcessor mat, double d) { //chyba done
+		float[][] outf = new float[mat.getWidth()][mat.getHeight()];
+		for(int i=0; i<mat.getWidth();i++){
+			for(int j=0; j<mat.getHeight();j++){
+				float matval =mat.getPixelValue(i, j);	
+				if(d > matval){ //wstawiam wartosc value
+					outf[i][j] = (float) d;
+				}
+				else{ //wstawiam ten sam element co byl
+					outf[i][j] = matval;
 				}
 			}
-			outf[1][j] = max;
-			max = Integer.MIN_VALUE;
 		}
 		ImageProcessor newip = new FloatProcessor(outf);
 		return newip;
@@ -524,9 +530,17 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		         				outf[i][j] = 0;
 		            		 }
 		            		 break;
-				        }
-			}			
-		}
+					case 6:  if (mat.getPixelValue(i, j) != value){//		int	NEQ =6;
+				    			outf[i][j] = 1;
+				    		 }
+				    		 else {
+				 				outf[i][j] = 0;
+				    		 }
+				    		 break;
+					}
+				    		 
+		        }
+		}			
 		ImageProcessor out = new FloatProcessor(outf);
 		return out;
 	}
