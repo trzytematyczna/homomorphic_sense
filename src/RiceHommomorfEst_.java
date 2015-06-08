@@ -2,8 +2,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
+
 import ij.*;
 import ij.gui.NewImage;
+import ij.measure.ResultsTable;
 import ij.plugin.TextReader;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.FloatProcessor;
@@ -39,7 +42,11 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		TextReader textReader = new TextReader();
 		ImageProcessor mriIp = textReader.open("res/MR_noisy.csv");
 		ImageProcessor snrIp = textReader.open("res/MR_SNR.csv");
-		rice_hommomorf_est(mriIp, snrIp, RiceHommomorfEst_.lpf_f, ex_filter_type,??, ex_window_size);
+		ImageProcessor[] res = rice_hommomorf_est(mriIp, snrIp, RiceHommomorfEst_.lpf_f, ex_filter_type,??, ex_window_size);
+		ResultsTable rician =  ResultsTable.createTableFromImage(res[0]);
+		ResultsTable gauss =  ResultsTable.createTableFromImage(res[1]);
+		rician.saveAs(output_filename_Rician);
+		gauss.saveAs(output_filename_Gaussian);
 	}
 
 	@Override
@@ -67,7 +74,12 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return  DOES_ALL+NO_IMAGE_REQUIRED;
 	}
 	
-	public static ImageProcessor rice_hommomorf_est(ImageProcessor In, ImageProcessor SNR, double LPF, int Modo, int noiseType, int winsize) {
+	public static ImageProcessor[] rice_hommomorf_est(ImageProcessor In, ImageProcessor SNR, double LPF, int Modo, int noiseType, int winsize) {
+		
+		ImageProcessor[] result = new FloatProcessor[2];
+		
+		ImageProcessor MapaR = null;
+		ImageProcessor MapaG = null;
 		
 		int[] Ws = {winsize, winsize};
 		
@@ -86,10 +98,13 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		}
 		
 		ImageProcessor LocalMean;
-		ImageProcessor Rn;
+		ImageProcessor Rn ;
 		ImageProcessor LPF1;
 		ImageProcessor LPF2;
 		ImageProcessor Fc1;
+
+		double psi = -0.5772;
+		double exp_psi_div2 = 1.3346;
 
 		if(noiseType == RICIAN){
 			if(Modo == 1){
@@ -102,31 +117,39 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 				LocalMean = createImage(In.getWidth(), In.getHeight(), 0);
 			}
 			
-			Rn = absdiff(In, M1);
+			Rn = absdiff(In, LocalMean);
 					
-			
-//			lRn.elementLog();
-//			LPF2 = lpf(lRn,LPF);
-//			Fc1 = correct_rice_gauss(SNR);
-//			LPF1 = LPF2.minus(Fc1);
-//			LPF1 = lpf(LPF1, LPF+2,2);
-//			ImageProcessor Mapa1 = LPF1.elementExp();
-//			
-//			double psi = -0.5772;
-//			for (int i=0; i<Mapa1.numRows(); i++){
-//				for (int j=0; j<Mapa1.numCols(); j++){
-//					double val = Mapa1.get(i, j)*2/Math.sqrt(2)*Math.exp(-psi/2);
-//					Mapa1.set(i, j, val);
-//				}
-//			}
-			
+			ImageProcessor lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
+			lRn.log();
+			LPF2 = lpf(lRn,LPF);
+			Fc1 = correct_rice_gauss(SNR);
+			LPF1 = substract(LPF2,Fc1);
+			LPF1 = lpf(LPF1, LPF+2,2);
+			LPF1.exp();
+			ImageProcessor Mapa1 = LPF1;
+
+			MapaR = multiply(Mapa1, 2);
+			MapaR.sqrt();
+			MapaR = multiply(MapaR, exp_psi_div2);
+
 			return null;
 		}
 		else if (noiseType == GAUSSIAN){
+			Rn = absdiff(In, M1);
+			ImageProcessor lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
+			lRn.log();
+			LPF2 = lpf(lRn,LPF);
+			LPF2.exp();
+			ImageProcessor Mapa2 = LPF2;
+			MapaG = multiply(Mapa2, 2);
+			MapaG.sqrt();
+			MapaG = multiply(MapaG, exp_psi_div2);
 			
 		}
+		result[0] = MapaR;
+		result[1] = MapaG;
 		
-		return null;
+		return result;
 	}
 
 	private static ImageProcessor correct_rice_gauss(ImageProcessor SNR) {
@@ -171,10 +194,21 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 		ImageProcessor I2 = filter2(h, It);
 //		I_out=I2((Nx+1):end-Nx,(Ny+1):end-Ny);
-		ImageProcessor I_out = I2.submat(new Range(Nx + 1, I2.getHeight() - Nx), new Range(Ny + 1, I2.getWidth() - Ny));
+		ImageProcessor I_out = submatrix(I2, Ny + 1, I2.getWidth() - Ny,  Nx + 1, I2.getHeight() - Nx);
 		
 		return I_out;
 		
+	}
+
+	private static ImageProcessor submatrix(ImageProcessor mat, int beginW, int endW,int beginH, int endH) {
+		float[][] outf = new float[endW-beginW][endH-beginH];
+		for (int i = beginW; i < endW; i++) {
+			for (int j = beginH; j < endH; j++) {
+				outf[i][j]= mat.getPixelValue(i,j);
+			}
+		}
+		ImageProcessor out = new FloatProcessor(outf);
+		return null;
 	}
 
 	private static ImageProcessor padarray(ImageProcessor in, int nx, int ny) { //chyba done
