@@ -35,6 +35,8 @@ public class Main {
 //		}
 		
 		ImageProcessor ii = fft(mriIp);
+		ii = fftshift(ii);
+		ii = fftshift(ii);
 		ImageProcessor ff = ifft(ii);
 		
 		new ImagePlus("fft",ff).show();
@@ -94,6 +96,25 @@ public class Main {
 		}
 		ImageProcessor ifftout = new FloatProcessor(ip.getWidth() / 2, ip.getHeight(), pixels);
 		return ifftout;
+	}
+	
+	private static ImageProcessor fftshift(ImageProcessor mat) {
+		
+		float[][] shift = new float[mat.getWidth()][mat.getHeight()];
+		float[][] pixelsCopy = mat.getFloatArray();
+		
+		for (int i = 0; i < mat.getWidth() / 2; i++) {
+			for (int j = 0; j < mat.getHeight() / 2; j++) {
+				shift[i][j] = pixelsCopy[i + mat.getWidth() / 2][j + mat.getHeight() / 2];
+				shift[i + mat.getWidth() / 2][j] = pixelsCopy[i][j + mat.getHeight() / 2];
+				shift[i][j + mat.getHeight() / 2] = pixelsCopy[i + mat.getWidth() / 2][j];
+				shift[i + mat.getWidth() / 2][j + mat.getHeight() / 2] = pixelsCopy[i][j];
+			}
+		}
+		
+		ImageProcessor ipshift = new FloatProcessor(shift);
+		return ipshift;
+		
 	}
 	
 }
