@@ -1,14 +1,25 @@
-package homomorphic_sense_opencv;
+package homomorphic_sense;
 
+import ij.ImagePlus;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
 
 public class RiceHommomorfEst_ implements PlugInFilter {
 
-	
 	static int GAUSSIAN = 1;
 	static int RICIAN = 2;
 	
+	@Override
+	public void run(ImageProcessor arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int setup(String arg0, ImagePlus arg1) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 	
 	public static ImageProcessor rice_hommomorf_est(ImageProcessor In, ImageProcessor SNR, double LPF, int Modo, int noiseType, int winsize) {
 		
@@ -24,12 +35,12 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 		M1 = filter2b(ImageProcessor.ones(5, 5, In.type()), In);
 		
-		if(SNR.rows() == 1 && SNR.rows() == 0){
-			Core.divide(M2, Sigma_n, SNR);
+		if(SNR.getHeight() == 1 && SNR.getHeight() == 0){
+			SNR = divide(M2, Sigma_n);
 		}
 		
 		ImageProcessor LocalMean;
-		ImageProcessor Rn = new ImageProcessor(In.rows(), In.cols(), In.type());
+		ImageProcessor Rn = new ImageProcessor(In.getHeight(), In.getWidth(), In.type());
 		ImageProcessor LPF1;
 		ImageProcessor LPF2;
 		ImageProcessor Fc1;
@@ -45,7 +56,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 				LocalMean = new ImageProcessor(1, 1, In.type(), new Scalar(0));
 			}
 			
-			Core.absdiff(In, M1, Rn);
+			Rn = absdiff(In, M1);
 					
 			
 //			lRn.elementLog();
@@ -97,8 +108,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 
 	private static ImageProcessor filter2b(ImageProcessor h, ImageProcessor I) {
 		
-		int Mx = h.rows();
-		int My = h.cols();
+		int Mx = h.getHeight();
+		int My = h.getWidth();
 //		System.out.println(Mx);
 //		System.out.println(My);
 		
@@ -114,15 +125,15 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 		ImageProcessor I2 = filter2(h, It);
 //		I_out=I2((Nx+1):end-Nx,(Ny+1):end-Ny);
-		ImageProcessor I_out = I2.submat(new Range(Nx + 1, I2.rows() - Nx), new Range(Ny + 1, I2.cols() - Ny));
+		ImageProcessor I_out = I2.submat(new Range(Nx + 1, I2.getHeight() - Nx), new Range(Ny + 1, I2.getWidth() - Ny));
 		
 		return I_out;
 		
 	}
 
 	private static ImageProcessor padarray(ImageProcessor in, int nx, int ny) {
-		int rows = in.rows() + nx * in.rows();
-		int cols = in.cols() + ny * in.cols();
+		int rows = in.getHeight() + nx * in.getHeight();
+		int cols = in.getWidth() + ny * in.getWidth();
 		ImageProcessor output = new ImageProcessor(rows, cols, in.type());
 //		for (int i = 0; i < rows; i++) {
 //			for (int j = 0; j < cols; j++) {
@@ -140,9 +151,9 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 
 	private static ImageProcessor lpf(ImageProcessor I, double sigma, int MODO) {
 		if (MODO == 1) {
-			int Mx = I.rows();
-			int My = I.cols();
-			ImageProcessor h = Imgproc.getGaussianKernel(I.rows() , sigma, CvType.CV_64F);
+			int Mx = I.getHeight();
+			int My = I.getWidth();
+			ImageProcessor h = Imgproc.getGaussianKernel(I.getHeight() , sigma, CvType.CV_64F);
 			h = divide(h, max(h));
 			if (Mx == 1 ||My == 1) {
 				ImageProcessor lRnF = new ImageProcessor(I.size(), I.type());
@@ -165,11 +176,11 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 				return If;
 			}
 		} else if (MODO == 2) {
-			int Mx = I.rows();
-			int My = I.cols();
-			ImageProcessor h = Imgproc.getGaussianKernel(I.rows() * 2 , sigma * 2, CvType.CV_64F);
+			int Mx = I.getHeight();
+			int My = I.getWidth();
+			ImageProcessor h = Imgproc.getGaussianKernel(I.getHeight() * 2 , sigma * 2, CvType.CV_64F);
 			h = divide(h, max(h));
-			h = h.submat(new Range(Mx + 1, h.rows()), new Range(My + 1, h.cols()));
+			h = h.submat(new Range(Mx + 1, h.getHeight()), new Range(My + 1, h.getWidth()));
 			if (Mx == 1 ||My == 1) {
 				ImageProcessor lRnF = new ImageProcessor(I.size(), I.type());
 				Core.dct(I, lRnF);
@@ -219,8 +230,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 
 	public static ImageProcessor[] em_ml_rice2D(ImageProcessor In, int N, int[] Ws) {
 		
-		int Mx = In.rows();
-		int My = In.cols();
+		int Mx = In.getHeight();
+		int My = In.getWidth();
 		
 		double prod = Ws[0] * Ws[1];
 		ImageProcessor Mask = divide(ImageProcessor.ones(Ws[0], Ws[1], In.type()), prod);
@@ -250,18 +261,18 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	private static void fftshift(ImageProcessor mat) {
-//		ImageProcessor m1 = mat.rowRange(0, 0).colRange(mat.rows() / 2, mat.cols() / 2);
-//		ImageProcessor m2 = mat.rowRange(0, mat.cols() / 2).colRange(mat.rows() / 2, mat.cols() / 2);
-//		ImageProcessor m3 = mat.rowRange(mat.rows() / 2, 0).colRange(mat.rows() / 2, mat.cols() / 2);
-//		ImageProcessor m4 = mat.rowRange(mat.rows() / 2, mat.rows() / 2).colRange(mat.rows() / 2, mat.cols() / 2);
+//		ImageProcessor m1 = mat.rowRange(0, 0).colRange(mat.getHeight() / 2, mat.getWidth() / 2);
+//		ImageProcessor m2 = mat.rowRange(0, mat.getWidth() / 2).colRange(mat.getHeight() / 2, mat.getWidth() / 2);
+//		ImageProcessor m3 = mat.rowRange(mat.getHeight() / 2, 0).colRange(mat.getHeight() / 2, mat.getWidth() / 2);
+//		ImageProcessor m4 = mat.rowRange(mat.getHeight() / 2, mat.getHeight() / 2).colRange(mat.getHeight() / 2, mat.getWidth() / 2);
 		Point p1 = new Point(0, 0);
-		Point p2 = new Point(0, (int)mat.cols() / 2);
-		Point p3 = new Point((int)mat.rows() / 2, 0);
-		Point p4 = new Point((int)mat.rows() / 2, (int)mat.cols() / 2);
-		Rect r1 = new Rect(0, 0, mat.rows() / 2, mat.cols() / 2);
-		Rect r2 = new Rect(0, mat.cols() / 2, mat.rows() / 2, mat.cols() / 2);
-		Rect r3 = new Rect(mat.rows() / 2, 0, mat.rows() / 2, mat.cols() / 2);
-		Rect r4 = new Rect(mat.rows() / 2, mat.rows() / 2, mat.rows() / 2, mat.cols() / 2);
+		Point p2 = new Point(0, (int)mat.getWidth() / 2);
+		Point p3 = new Point((int)mat.getHeight() / 2, 0);
+		Point p4 = new Point((int)mat.getHeight() / 2, (int)mat.getWidth() / 2);
+		Rect r1 = new Rect(0, 0, mat.getHeight() / 2, mat.getWidth() / 2);
+		Rect r2 = new Rect(0, mat.getWidth() / 2, mat.getHeight() / 2, mat.getWidth() / 2);
+		Rect r3 = new Rect(mat.getHeight() / 2, 0, mat.getHeight() / 2, mat.getWidth() / 2);
+		Rect r4 = new Rect(mat.getHeight() / 2, mat.getHeight() / 2, mat.getHeight() / 2, mat.getWidth() / 2);
 		ImageProcessor m1 = mat.submat(r1);
 		ImageProcessor m2 = mat.submat(r2); 
 		ImageProcessor m3 = mat.submat(r3);
@@ -284,50 +295,50 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	private static ImageProcessor add(ImageProcessor mat1, ImageProcessor mat2) {
-		ImageProcessor out = new ImageProcessor(mat1.rows(), mat1.cols(), mat1.type());
+		ImageProcessor out = new ImageProcessor(mat1.getHeight(), mat1.getWidth(), mat1.type());
 		Core.add(mat1, mat2, out);
 		return out;
 	}
 	
 	private static ImageProcessor add(ImageProcessor mat, double value) {
-		ImageProcessor out = new ImageProcessor(mat.rows(), mat.cols(), mat.type());
+		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
 		Core.add(mat, new Scalar(0), out);
 		return out;
 	}
 	
 	private static ImageProcessor filter2(ImageProcessor mat1, ImageProcessor mat2) {
-		ImageProcessor out = new ImageProcessor(mat1.rows(), mat1.cols(), mat1.type());
+		ImageProcessor out = new ImageProcessor(mat1.getHeight(), mat1.getWidth(), mat1.type());
 		Imgproc.filter2D(mat1, out, -1, mat2);
 		return out;
 	}
 	
 	private static ImageProcessor abs(ImageProcessor mat) {
-		ImageProcessor out = new ImageProcessor(mat.rows(), mat.cols(), mat.type());
+		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
 		Core.absdiff(mat, new Scalar(0), out);
 		return out;
 	}
 	
 	private static ImageProcessor substract(ImageProcessor src1, ImageProcessor src2) {
-		ImageProcessor out = new ImageProcessor(src1.rows(), src1.cols(), src1.type());
+		ImageProcessor out = new ImageProcessor(src1.getHeight(), src1.getWidth(), src1.type());
 		Core.subtract(src1, src2, out);
 		return out;
 	}
 	
 	private static ImageProcessor substract(double value, ImageProcessor mat) {
-		ImageProcessor out = new ImageProcessor(mat.rows(), mat.cols(), mat.type());
+		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
 		ImageProcessor values = new ImageProcessor(mat.size(), mat.type(), new Scalar(value));
 		Core.subtract(values, mat, out);
 		return out;
 	}
 	
 	private static ImageProcessor sqrt(ImageProcessor mat) {
-		ImageProcessor out = new ImageProcessor(mat.rows(), mat.cols(), mat.type());
+		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
 		Core.sqrt(mat, out);
 		return out;
 	}
 	
 	private static ImageProcessor pow(ImageProcessor mat, double power) {
-		ImageProcessor out = new ImageProcessor(mat.rows(), mat.cols(), mat.type());
+		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
 		Core.pow(mat, power, out);
 		return out;
 	}
@@ -338,7 +349,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	private static ImageProcessor max(ImageProcessor mat, double value) {
-		ImageProcessor out = new ImageProcessor(mat.rows(), mat.cols(), mat.type());
+		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
 		Core.max(mat, new Scalar(value), out);
 		return out;
 	}
@@ -349,38 +360,38 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	private static ImageProcessor divide(ImageProcessor mat, double value) {
-		ImageProcessor out = new ImageProcessor(mat.rows(), mat.cols(), mat.type());
+		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
 		Core.divide(mat, new Scalar(value), out);
 		return out;
 	}
 	
 	private static ImageProcessor divide(double value, ImageProcessor mat) {
-		ImageProcessor out = new ImageProcessor(mat.rows(), mat.cols(), mat.type());
+		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
 		ImageProcessor values = new ImageProcessor(mat.size(), mat.type(), new Scalar(value));
 		Core.divide(values, mat, out);
 		return out;
 	}
 	
 	private static ImageProcessor divide(ImageProcessor mat1, ImageProcessor mat2) {
-		ImageProcessor out = new ImageProcessor(mat1.rows(), mat1.cols(), mat1.type());
+		ImageProcessor out = new ImageProcessor(mat1.getHeight(), mat1.getWidth(), mat1.type());
 		Core.divide(mat1, mat2, out);
 		return out;
 	}
 	
 	private static ImageProcessor compare(ImageProcessor mat, double value, int cmpop) {
-		ImageProcessor out = new ImageProcessor(mat.rows(), mat.cols(), mat.type());
+		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
 		Core.compare(mat, new Scalar(value), out, cmpop);
 		return out;
 	}
 	
 	private static ImageProcessor multiply(ImageProcessor mat, double value) {
-		ImageProcessor out = new ImageProcessor(mat.rows(), mat.cols(), mat.type());
+		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
 		Core.multiply(mat, new Scalar(value), out);
 		return out;
 	}
 	
 	private static ImageProcessor multiply(ImageProcessor src1, ImageProcessor src2) {
-		ImageProcessor out = new ImageProcessor(src1.rows(), src1.cols(), src1.type());
+		ImageProcessor out = new ImageProcessor(src1.getHeight(), src1.getWidth(), src1.type());
 		Core.multiply(src1, src2, out);
 		return out;
 	}
