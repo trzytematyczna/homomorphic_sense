@@ -286,7 +286,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		int My = In.getWidth();
 		
 		double prod = Ws[0] * Ws[1];
-		ImageProcessor Mask = divide(ImageProcessor.ones(Ws[0], Ws[1], In.type()), prod);
+		ImageProcessor Mask = divide(createImage(Ws[1],Ws[0], 1.0), prod);
 		
 //		a_k=sqrt(sqrt(max(2.*filter2B(Mask,In.^2).^2-filter2B(Mask,In.^4),0)));
 		ImageProcessor a_k = sqrt(max(substract(multiply(pow(filter2b(Mask, pow(In, 2)), 2), 2), filter2b(Mask, pow(In, 4))), 0));
