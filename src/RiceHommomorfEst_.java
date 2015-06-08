@@ -1,5 +1,12 @@
-import ij.ImagePlus;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+import ij.*;
+import ij.gui.NewImage;
+import ij.plugin.TextReader;
 import ij.plugin.filter.PlugInFilter;
+import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.FloatProcessor;
 
@@ -7,17 +14,62 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 
 	static int GAUSSIAN = 1;
 	static int RICIAN = 2;
+	int ex_filter_type = 1;     //# 1 - local mean, 
+//            # 2 - expectation-maximization (EM).
+	int ex_window_size =5; //# window size for E{X},
+	int ex_iterations= 10;  //   # number of iterations of the EM algorithm (used only by EM),
+	double lpf_f = 3.4;    //        # sigma for LPF filter,
+	double lpf_f_SNR = 1.2;  //      # sigma for LPF filter; used to smooth sigma(x) in SNR,
+	double lpf_f_Rice= 5.4;       //# sigma for LPF filter; used to smooth Rician corrected noise map,
+	String input_filename = "MR_noisy.csv";                    //# Noisy MR image,
+	String input_filenameSNR = "MR_SNR.csv";  //                  # Noisy MR image,
+	String output_filename_Gaussian = "MR_Gaussian_Map.csv";   //# estimated noise map for Gaussian case,
+	String output_filename_Rician = "MR_Rician_Map.csv"  ;//    # estimated noise map for Rician case,
+	
+	
+	int LT =1;
+	int	GT= 2;
+	int	EQ =3;
+	int	LOE = 4;
+	int	GOE =5;
 	
 	@Override
 	public void run(ImageProcessor arg0) {
-		// TODO Auto-generated method stub
-		
+		TextReader textReader = new TextReader();
+		ImageProcessor mriIp = textReader.open("res/MR_noisy.csv");
+		ImageProcessor snrIp = textReader.open("res/MR_SNR.csv");
+		ImagePlus asd = new ImagePlus();
+	    NewImage.createFloatImage("asd", 2, 2, 2, 2);
+	    float[] jedne = {1,1,1,1,1,1};
+	    float[] dwa = {1,1,1,1,1,1};
+	    float[][] www = {jedne,dwa};
+	   ImageProcessor asdasd = new FloatProcessor(www);
+//				ImagePlus("asd", mriIp);
 	}
 
 	@Override
 	public int setup(String arg0, ImagePlus arg1) {
 		// TODO Auto-generated method stub
-		return 0;
+		
+		BufferedReader br = null;
+		try {
+ 
+			String sCurrentLine;
+			br = new BufferedReader(new FileReader("C:\\testing.txt"));
+			while ((sCurrentLine = br.readLine()) != null) {
+				System.out.println(sCurrentLine);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (br != null)br.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+		
+		return  DOES_ALL+NO_IMAGE_REQUIRED;
 	}
 	
 	public static ImageProcessor rice_hommomorf_est(ImageProcessor In, ImageProcessor SNR, double LPF, int Modo, int noiseType, int winsize) {
@@ -232,7 +284,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		int My = In.getWidth();
 		
 		double prod = Ws[0] * Ws[1];
-		ImageProcessor Mask = divide(ImageProcessor.ones(Ws[0], Ws[1], In.type()), prod);
+		ImageProcessor Mask = divide(createImage(Ws[1],Ws[0], 1.0), prod);
 		
 //		a_k=sqrt(sqrt(max(2.*filter2B(Mask,In.^2).^2-filter2B(Mask,In.^4),0)));
 		ImageProcessor a_k = sqrt(max(substract(multiply(pow(filter2b(Mask, pow(In, 2)), 2), 2), filter2b(Mask, pow(In, 4))), 0));
@@ -312,104 +364,186 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	private static ImageProcessor add(ImageProcessor mat1, ImageProcessor mat2) {
-		ImageProcessor out = new ImageProcessor(mat1.getHeight(), mat1.getWidth(), mat1.type());
-		Core.add(mat1, mat2, out);
-		return out;
-	}
-	
-	private static ImageProcessor add(ImageProcessor mat, double value) {
-		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
-		Core.add(mat, new Scalar(0), out);
-		return out;
-	}
-	
+
 	private static ImageProcessor filter2(ImageProcessor mat1, ImageProcessor mat2) {
 		ImageProcessor out = new ImageProcessor(mat1.getHeight(), mat1.getWidth(), mat1.type());
 		Imgproc.filter2D(mat1, out, -1, mat2);
 		return out;
 	}
 	
-	private static ImageProcessor abs(ImageProcessor mat) {
-		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
-		Core.absdiff(mat, new Scalar(0), out);
+	
+	private static ImageProcessor add(ImageProcessor mat1, ImageProcessor mat2) { //done
+		float[][] outf = new float[mat1.getWidth()][mat1.getHeight()];
+		for(int i=0; i<mat1.getWidth();i++){
+			for(int j=0; j<mat1.getHeight();j++){
+				outf[i][j] = mat1.getPixelValue(i, j)+mat2.getPixelValue(i, j);
+			}			
+		}
+		ImageProcessor out = new FloatProcessor(outf);
 		return out;
 	}
 	
-	private static ImageProcessor substract(ImageProcessor src1, ImageProcessor src2) {
-		ImageProcessor out = new ImageProcessor(src1.getHeight(), src1.getWidth(), src1.type());
-		Core.subtract(src1, src2, out);
+	private static ImageProcessor add(ImageProcessor mat, double value) {//done
+		mat.add(value);
+		return mat;
+	}
+	
+	private static ImageProcessor abs(ImageProcessor mat) {//done
+		mat.abs();
+		return mat;
+	}
+	
+	private static ImageProcessor substract(ImageProcessor mat1, ImageProcessor mat2) { //done
+		float[][] outf = new float[mat1.getWidth()][mat1.getHeight()];
+		for(int i=0; i<mat1.getWidth();i++){
+			for(int j=0; j<mat1.getHeight();j++){
+				outf[i][j] = mat1.getPixelValue(i, j)-mat2.getPixelValue(i, j);
+			}			
+		}
+		ImageProcessor out = new FloatProcessor(outf);
 		return out;
 	}
 	
-	private static ImageProcessor substract(double value, ImageProcessor mat) {
-		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
-		ImageProcessor values = new ImageProcessor(mat.size(), mat.type(), new Scalar(value));
-		Core.subtract(values, mat, out);
+	private static ImageProcessor substract(double value, ImageProcessor mat) {//done
+		ImageProcessor newip = substract(createImage(mat.getWidth(),mat.getHeight(), value), mat);
+		return newip ;
+	}
+	
+	private static ImageProcessor sqrt(ImageProcessor mat) {//done
+		mat.sqrt();
+		return mat;
+	}
+	
+	private static ImageProcessor pow(ImageProcessor mat, double power) {//done
+		for(int i=0; i<power; i++){
+			mat = multiply(mat, mat);			
+		}
+		return mat;
+	}
+	
+	private static double max(ImageProcessor mat) { //done
+		float max = Integer.MIN_VALUE;
+		for(int i=0; i<mat.getWidth();i++){
+			for(int j=0; j<mat.getHeight();j++){
+				float val =mat.getPixelValue(i, j);
+				if(max < val){
+					max = val;
+				}
+			}			
+		}
+		return max;
+	}
+	
+	private static ImageProcessor max(ImageProcessor mat, double value) { //chyba done
+		float max = Integer.MIN_VALUE;
+		float[][] outf = new float[1][mat.getHeight()];
+		for(int j=0; j<mat.getHeight();j++){
+			for(int i=0; i<mat.getWidth();i++){
+				float val =mat.getPixelValue(i, j);
+				if(max < val){
+					max = val;
+				}
+			}
+			outf[1][j] = max;
+			max = Integer.MIN_VALUE;
+		}
+		ImageProcessor newip = new FloatProcessor(outf);
+		return newip;
+	}
+	
+	private static double min(ImageProcessor mat) { //done
+		float min = Integer.MAX_VALUE;
+		for(int i=0; i<mat.getWidth();i++){
+			for(int j=0; j<mat.getHeight();j++){
+				float val =mat.getPixelValue(i, j);
+				if(min > val){
+					min = val;
+				}
+			}			
+		}
+		return min;
+	}
+	
+	private static ImageProcessor divide(ImageProcessor mat, double value) {	//done
+		mat.multiply(1/value);
+		return mat;
+	}
+	
+	private static ImageProcessor divide(double value, ImageProcessor mat) {	//done
+		ImageProcessor newip = divide(createImage(mat.getWidth(),mat.getHeight(), value), mat);
+		return newip ;
+	}
+	
+	private static ImageProcessor divide(ImageProcessor mat1, ImageProcessor mat2) {	//done
+		float[][] outf = new float[mat1.getWidth()][mat1.getHeight()];
+		for(int i=0; i<mat1.getWidth();i++){
+			for(int j=0; j<mat1.getHeight();j++){
+				outf[i][j] = mat1.getPixelValue(i, j)/mat2.getPixelValue(i, j);
+			}			
+		}
+		ImageProcessor out = new FloatProcessor(outf);
 		return out;
 	}
 	
-	private static ImageProcessor sqrt(ImageProcessor mat) {
-		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
-		Core.sqrt(mat, out);
+	private static ImageProcessor compare(ImageProcessor mat, double value, int cmpop) { //done
+		float[][] outf = new float[mat.getWidth()][mat.getHeight()];
+		for(int i=0; i<mat.getWidth();i++){
+			for(int j=0; j<mat.getHeight();j++){
+				switch (cmpop) {
+		            case 1:  if (mat.getPixelValue(i, j) < value){//		int LT =1;
+		            			outf[i][j] = 1;
+		            		 }
+		            		 else {
+		         				outf[i][j] = 0;
+		            		 }
+		            		 break;
+		            case 2:  if (mat.getPixelValue(i, j) > value){//		int	GT= 2;
+		            			outf[i][j] = 1;
+		            		 }
+		            		 else {
+		         				outf[i][j] = 0;
+		            		 }
+		            		 break;
+		            case 3:  if (mat.getPixelValue(i, j) == value){//		int	EQ =3;
+		            			outf[i][j] = 1;
+		            		 }
+		            		 else {
+		         				outf[i][j] = 0;
+		            		 }
+		            		 break;
+		            case 4:  if (mat.getPixelValue(i, j) <= value){//		int	LOE = 4;
+		            			outf[i][j] = 1;
+		            		 }
+		            		 else {
+		         				outf[i][j] = 0;
+		            		 }
+		            		 break;
+		            case 5:  if (mat.getPixelValue(i, j) >= value){//		int	GOE =5;
+		            			outf[i][j] = 1;
+		            		 }
+		            		 else {
+		         				outf[i][j] = 0;
+		            		 }
+		            		 break;
+				        }
+			}			
+		}
+		ImageProcessor out = new FloatProcessor(outf);
 		return out;
 	}
 	
-	private static ImageProcessor pow(ImageProcessor mat, double power) {
-		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
-		Core.pow(mat, power, out);
-		return out;
+	private static ImageProcessor multiply(ImageProcessor mat, double value) {	//done
+		mat.multiply(value);
+		return mat;
 	}
-	
-	private static double max(ImageProcessor mat) {
-		MinMaxLocResult result = Core.minMaxLoc(mat);
-		return result.maxVal;
-	}
-	
-	private static ImageProcessor max(ImageProcessor mat, double value) {
-		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
-		Core.max(mat, new Scalar(value), out);
-		return out;
-	}
-	
-	private static double min(ImageProcessor mat) {
-		MinMaxLocResult result = Core.minMaxLoc(mat);
-		return result.minVal;
-	}
-	
-	private static ImageProcessor divide(ImageProcessor mat, double value) {
-		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
-		Core.divide(mat, new Scalar(value), out);
-		return out;
-	}
-	
-	private static ImageProcessor divide(double value, ImageProcessor mat) {
-		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
-		ImageProcessor values = new ImageProcessor(mat.size(), mat.type(), new Scalar(value));
-		Core.divide(values, mat, out);
-		return out;
-	}
-	
-	private static ImageProcessor divide(ImageProcessor mat1, ImageProcessor mat2) {
-		ImageProcessor out = new ImageProcessor(mat1.getHeight(), mat1.getWidth(), mat1.type());
-		Core.divide(mat1, mat2, out);
-		return out;
-	}
-	
-	private static ImageProcessor compare(ImageProcessor mat, double value, int cmpop) {
-		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
-		Core.compare(mat, new Scalar(value), out, cmpop);
-		return out;
-	}
-	
-	private static ImageProcessor multiply(ImageProcessor mat, double value) {
-		ImageProcessor out = new ImageProcessor(mat.getHeight(), mat.getWidth(), mat.type());
-		Core.multiply(mat, new Scalar(value), out);
-		return out;
-	}
-	
-	private static ImageProcessor multiply(ImageProcessor src1, ImageProcessor src2) {
-		ImageProcessor out = new ImageProcessor(src1.getHeight(), src1.getWidth(), src1.type());
-		Core.multiply(src1, src2, out);
+	private static ImageProcessor multiply(ImageProcessor mat1, ImageProcessor mat2) {	//done
+		float[][] outf = new float[mat1.getWidth()][mat1.getHeight()];
+		for(int i=0; i<mat1.getWidth();i++){
+			for(int j=0; j<mat1.getHeight();j++){
+				outf[i][j] = mat1.getPixelValue(i, j)*mat2.getPixelValue(i, j);
+			}			
+		}
+		ImageProcessor out = new FloatProcessor(outf);
 		return out;
 	}
 	
