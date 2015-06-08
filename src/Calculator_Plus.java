@@ -1,5 +1,3 @@
-package plugins;
-
 import ij.*;
 import ij.plugin.*;
 import ij.gui.*;
