@@ -16,8 +16,6 @@ import edu.emory.mathcs.jtransforms.fft.*;
 
 public class RiceHommomorfEst_ implements PlugInFilter {
 
-	static int GAUSSIAN = 1;
-	static int RICIAN = 2;
 	static int ex_filter_type = 1;     //# 1 - local mean, 
 //            # 2 - expectation-maximization (EM).
 	static int ex_window_size =5; //# window size for E{X},
@@ -107,7 +105,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		double psi = -0.5772;
 		double exp_psi_div2 = 1.3346;
 
-		if(noiseType == RICIAN){
+		//RICIAN!!
+//		if(noiseType == RICIAN){
 			if(Modo == 1){
 				LocalMean = M1;
 			}
@@ -132,10 +131,10 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			MapaR = multiply(Mapa1, 2);
 			MapaR.sqrt();
 			MapaR = multiply(MapaR, exp_psi_div2);
-
-			return null;
-		}
-		else if (noiseType == GAUSSIAN){
+//		}
+		
+			//GAUSSIAN!!
+//		else if (noiseType == GAUSSIAN){
 			Rn = absdiff(In, M1);
 			ImageProcessor lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
 			lRn.log();
@@ -146,7 +145,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			MapaG.sqrt();
 			MapaG = multiply(MapaG, exp_psi_div2);
 			
-		}
+//		}
 		result[0] = MapaR;
 		result[1] = MapaG;
 		
@@ -172,8 +171,6 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 
 	private static ImageProcessor filter2b(ImageProcessor h, ImageProcessor I) {
-		//TODO
-
 		int Mx = h.getHeight();
 		int My = h.getWidth();
 //		System.out.println(Mx);
@@ -187,8 +184,6 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		int Nx = (Mx - 1) / 2;
 		int Ny = (My - 1) / 2;
 		ImageProcessor It = padarray(I, Nx, Ny);
-		
-		
 		ImageProcessor I2 = filter2(h, It);
 //		I_out=I2((Nx+1):end-Nx,(Ny+1):end-Ny);
 		ImageProcessor I_out = submatrix(I2, Ny + 1, I2.getWidth() - Ny,  Nx + 1, I2.getHeight() - Nx);
@@ -560,14 +555,18 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 
-	private static ImageProcessor filter2(ImageProcessor mat1, ImageProcessor mat2) {
-		//TODO
-		ImageProcessor out = new ImageProcessor(mat1.getHeight(), mat1.getWidth(), mat1.type());
-		Imgproc.filter2D(mat1, out, -1, mat2);
+	private static ImageProcessor filter2(ImageProcessor mask, ImageProcessor mat) {
+		ImageProcessor kernel= flip(mask);
+		ImageProcessor out = new FloatProcessor(Convolution.convolute(mat, kernel));
 		return out;
 	}
 	
 	
+	private static ImageProcessor flip(ImageProcessor mask) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	private static ImageProcessor add(ImageProcessor mat1, ImageProcessor mat2) { //done
 		float[][] outf = new float[mat1.getWidth()][mat1.getHeight()];
 		for(int i=0; i<mat1.getWidth();i++){
