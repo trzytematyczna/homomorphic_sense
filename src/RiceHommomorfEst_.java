@@ -9,6 +9,7 @@ import ij.plugin.filter.PlugInFilter;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.FloatProcessor;
+import edu.emory.mathcs.jtransforms.fft.*;
 
 public class RiceHommomorfEst_ implements PlugInFilter {
 
@@ -345,7 +346,30 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	private static ImageProcessor fft(ImageProcessor ip) {
-		
+		float[] pixelsAndZeros = new float[ip.getHeight() * ip.getWidth() * 2];
+		float[] pixels = (float[])ip.getPixels();
+		for (int i = 0; i < ip.getHeight() * ip.getWidth(); i++) {
+			pixelsAndZeros[i] = pixels[i];
+		}
+		for (int i = ip.getHeight() * ip.getWidth(); i < ip.getHeight() * ip.getWidth() * 2; i++) {
+			pixelsAndZeros[i] = 0;
+		}
+		FloatFFT_2D fft2d = new FloatFFT_2D(ip.getHeight(), ip.getWidth());
+		fft2d.realForwardFull(pixelsAndZeros);
+		ImageProcessor fftout = new FloatProcessor(ip.getWidth() * 2, ip.getHeight(), pixelsAndZeros);
+		return fftout;
+	}
+	
+	private static ImageProcessor ifft(ImageProcessor ip) {
+		float[] pixelsCopy = (float[])ip.getPixelsCopy();
+		FloatFFT_2D fft2d = new FloatFFT_2D(ip.getHeight(), ip.getWidth() / 2);
+		fft2d.complexInverse(pixelsCopy, true);
+		float[] pixels = new float[ip.getHeight() * ip.getWidth() / 2];
+		for (int i = 0; i < ip.getHeight() * ip.getWidth() / 2; i++) {
+			pixels[i] = pixelsCopy[i * 2];
+		}
+		ImageProcessor ifftout = new FloatProcessor(ip.getWidth() / 2, ip.getHeight(), pixels);
+		return ifftout;
 	}
 	
 	private static ImageProcessor createImage(int width, int height, double fill) {
