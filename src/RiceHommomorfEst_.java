@@ -1,8 +1,7 @@
-package homomorphic_sense;
-
 import ij.ImagePlus;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.ImageProcessor;
+import ij.process.FloatProcessor;
 
 public class RiceHommomorfEst_ implements PlugInFilter {
 
@@ -33,14 +32,14 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 		Sigma_n = lpf(Sigma_n,1.2);
 		
-		M1 = filter2b(ImageProcessor.ones(5, 5, In.type()), In);
+		M1 = filter2b(new FloatProcessor().createProcessor(5, 5). ImageProcessor.ones(5, 5), In);
 		
 		if(SNR.getHeight() == 1 && SNR.getHeight() == 0){
 			SNR = divide(M2, Sigma_n);
 		}
 		
 		ImageProcessor LocalMean;
-		ImageProcessor Rn = new ImageProcessor(In.getHeight(), In.getWidth(), In.type());
+		ImageProcessor Rn;
 		ImageProcessor LPF1;
 		ImageProcessor LPF2;
 		ImageProcessor Fc1;
@@ -53,7 +52,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 				LocalMean = M2;
 			}
 			else{
-				LocalMean = new ImageProcessor(1, 1, In.type(), new Scalar(0));
+				LocalMean = new ImageProcessor();
 			}
 			
 			Rn = absdiff(In, M1);
@@ -82,7 +81,6 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 		return null;
 	}
-
 
 	private static ImageProcessor correct_rice_gauss(ImageProcessor SNR) {
 
@@ -292,6 +290,25 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		mat.put((int)p3.x, (int)p3.y, b2);
 		mat.put((int)p4.x, (int)p4.y, b1);
 		
+	}
+	
+	private static ImageProcessor fft(ImageProcessor ip) {
+		
+	}
+	
+	private static ImageProcessor createImage(int width, int height, double fill) {
+		float[][] data = new float[width][height];
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
+				data[i][j] = (float) fill;
+			}
+		}
+		ImageProcessor ip = new FloatProcessor(data);
+		return ip;
+	}
+	
+	private static ImageProcessor absdiff(ImageProcessor in, ImageProcessor m1) {
+		return null;
 	}
 	
 	private static ImageProcessor add(ImageProcessor mat1, ImageProcessor mat2) {
