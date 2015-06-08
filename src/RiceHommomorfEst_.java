@@ -153,25 +153,21 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 
 	private static ImageProcessor correct_rice_gauss(ImageProcessor SNR) {
+		//Fc=Coefs(1)+Coefs(2).*a1+Coefs(3).*a1.^2+Coefs(4).*a1.^3+Coefs(5).*a1.^4+Coefs(6).*a1.^5+Coefs(7).*a1.^6+Coefs(8).*a1.^7+Coefs(9).*a1.^8;
+		//Fc=Fc.*(a1<=7);       
 
-//		//Fc=Coefs(1)+Coefs(2).*a1+Coefs(3).*a1.^2+Coefs(4).*a1.^3+Coefs(5).*a1.^4+Coefs(6).*a1.^5+Coefs(7).*a1.^6+Coefs(8).*a1.^7+Coefs(9).*a1.^8;
-//		//
-//		//Fc=Fc.*(a1<=7);       
-//
-//		ImageProcessor Fc = new ImageProcessor(SNR.numRows(), SNR.numCols());
-//		Fc = multipleM(SNR, coeffs[1]);
-//		Fc.plus(coeffs[0]).plus(multipleM(SNR.elementPower(2), coeffs[2])).plus(multipleM(SNR.elementPower(3), coeffs[3])).plus(multipleM(SNR.elementPower(4), coeffs[4])).plus(multipleM(SNR.elementPower(5), coeffs[5])).plus(multipleM(SNR.elementPower(6), coeffs[6])).plus(multipleM(SNR.elementPower(7), coeffs[7])).plus(multipleM(SNR.elementPower(8), coeffs[8]));
-//		
-//		for (int i=0; i<Fc.numRows(); i++){
-//			for (int j=0; j<Fc.numCols(); j++){
-//				double snr_val = SNR.get(i, j);
-//				if(snr_val <=7){
-//					Fc.set(i, j, Fc.get(i, j)*snr_val);
-//				}
-//			}
-//		}
+		double[] Coefs = {-0.289549906258443,	-0.0388922575606330,	0.409867108141953,	-0.355237628488567,
+				0.149328280945610,	-0.0357861117942093,	0.00497952893859122,	-0.000374756374477592,	1.18020229140092e-05};
+
+		ImageProcessor Fc = add(multiply(pow(SNR, 8), Coefs[8]), multiply(pow(SNR, 7), Coefs[7]));
+		Fc = add(Fc, add(multiply(pow(SNR, 6), Coefs[6]), multiply(pow(SNR, 5), Coefs[5])));
+		Fc = add(Fc, add(multiply(pow(SNR, 4), Coefs[4]), multiply(pow(SNR, 3), Coefs[3])));
+		Fc = add(Fc, add(multiply(pow(SNR, 2), Coefs[2]), multiply(pow(SNR, 1), Coefs[1])));
+		Fc = add(Fc, Coefs[0]);
 		
-		return null;
+		Fc = multiply(Fc, compare(SNR, 7, LOE));
+
+		return Fc;
 	}
 
 	private static ImageProcessor filter2b(ImageProcessor h, ImageProcessor I) {
@@ -306,11 +302,150 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 //
 //		if (sum(cont)>1)
 //		K=find(z<1.5);
+		ImageProcessor K = null;
+		if(sum(cont)>1){
+			K = find(z, 1.5, LT);			
+			M = applyfromfind(M, K, divide(besseli(1, valuesfromfind(z,K)), besseli(0, valuesfromfind(z,K))));
+		}
+		K = find(z,0, EQ);
+		
+		M = applyfromfind(M, K,0.0);
+		
 //		M(K)=besseli(1,z(K))./besseli(0,z(K));
 //		end
 //		K=find(z==0);
 //		M(K)=0;
-		return null;
+		return M;
+	}
+
+	private static ImageProcessor besseli(int besval, ImageProcessor mat) {
+		float[][] outf = new float[mat.getWidth()][mat.getHeight()]; 
+		if(besval == 0){
+			for(int i=0; i<mat.getWidth();i++){
+				for(int j=0; j<mat.getHeight();j++){
+					outf[i][j] = (float) Besseli.bessj0(mat.getPixelValue(i, j));
+				}
+			}
+		}
+		if(besval == 1){
+			for(int i=0; i<mat.getWidth();i++){
+				for(int j=0; j<mat.getHeight();j++){
+					outf[i][j] =  (float) Besseli.bessj1(mat.getPixelValue(i, j));
+				}
+			}
+		}
+		return new FloatProcessor(outf);
+	}
+
+	private static ImageProcessor valuesfromfind(ImageProcessor z, ImageProcessor k) {
+		float[][] outf = new float[1][k.getHeight()];
+		int linear_index = 1;
+		int iterator = 0;
+		
+		for(int i=0; i<z.getWidth();i++){
+			for(int j=0; j<z.getHeight();j++){
+				if(linear_index == k.getPixelValue(1, iterator)){
+					outf[1][iterator] = z.getPixelValue(i, j);					
+					iterator++;
+				}
+				linear_index++;
+			}
+		}		
+		return new FloatProcessor(outf);
+	}
+
+	private static ImageProcessor applyfromfind(ImageProcessor mat,ImageProcessor k, ImageProcessor z) {
+		int linear_index = 1;
+		int iterator = 0;
+		
+		float[][] outf= new float[mat.getWidth()][mat.getHeight()];
+		for(int i=0; i<mat.getWidth();i++){
+			for(int j=0; j<mat.getHeight();j++){
+				if(linear_index == k.getPixelValue(1, iterator)){
+					outf[i][j] = z.getPixelValue(1, iterator);					
+					iterator++;
+				}
+				else{
+					outf[i][j] = mat.getPixelValue(i, j);
+				}
+				linear_index++;
+			}
+		}
+		return new FloatProcessor(outf);
+	}
+	
+	private static ImageProcessor applyfromfind(ImageProcessor mat,ImageProcessor k, double val) {
+		int linear_index = 1;
+		int iterator = 0;
+		
+		float[][] outf= new float[mat.getWidth()][mat.getHeight()];
+		for(int i=0; i<mat.getWidth();i++){
+			for(int j=0; j<mat.getHeight();j++){
+				if(linear_index == k.getPixelValue(1, iterator)){
+					iterator++;
+					outf[i][j] = (float) val;					
+				}
+				else{
+					outf[i][j] = mat.getPixelValue(i, j);
+				}
+				linear_index++;
+			}
+		}
+		return new FloatProcessor(outf);
+	}
+
+	private static ImageProcessor find(ImageProcessor mat, double value, int cmpop) {
+		int linear_index = 1;
+		int iterator = 0;
+		int[] temp = new int[mat.getWidth()*mat.getHeight()];
+		for(int i=0; i<mat.getWidth();i++){
+			for(int j=0; j<mat.getHeight();j++){
+				switch (cmpop) {
+		            case 1:  if (mat.getPixelValue(i, j) < value){//		int LT =1;
+		            			temp[iterator++]=linear_index;
+		            		 }
+		            		 break;
+		            case 2:  if (mat.getPixelValue(i, j) > value){//		int	GT= 2;
+		            			temp[iterator++]=linear_index;
+		            		 }
+		            		 break;
+		            case 3:  if (mat.getPixelValue(i, j) == value){//		int	EQ =3;
+		            			temp[iterator++]=linear_index;
+		            		 }
+		            		 break;
+		            case 4:  if (mat.getPixelValue(i, j) <= value){//		int	LOE = 4;
+		            			temp[iterator++]=linear_index;
+		            		 }
+		            		 break;
+		            case 5:  if (mat.getPixelValue(i, j) >= value){//		int	GOE =5;
+		            			temp[iterator++]=linear_index;
+		            		 }
+		            		 break;
+					case 6:  if (mat.getPixelValue(i, j) != value){//		int	NEQ =6;
+								temp[iterator++]=linear_index;
+				    		 }
+				    		 break;
+				}
+				
+				linear_index++;		 
+		   }
+		}
+		float[][] outf = new float[1][iterator];
+		for(int i = 0; i<iterator; i++){
+			outf[1][i] = temp[i];
+		}
+		
+		return new FloatProcessor(outf);
+	}
+
+	private static double sum(ImageProcessor mat1) {
+		double res = 0.0;
+		for(int i=0; i<mat1.getWidth();i++){
+			for(int j=0; j<mat1.getHeight();j++){
+				res += mat1.getPixelValue(i, j);
+			}			
+		}
+		return res;
 	}
 
 	public static ImageProcessor[] em_ml_rice2D(ImageProcessor In, int N, int[] Ws) {
