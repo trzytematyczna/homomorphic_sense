@@ -193,14 +193,14 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 
 	private static ImageProcessor submatrix(ImageProcessor mat, int beginW, int endW,int beginH, int endH) {
-		float[][] outf = new float[endW-beginW][endH-beginH];
-		for (int i = beginW; i < endW; i++) {
-			for (int j = beginH; j < endH; j++) {
-				outf[i][j]= mat.getPixelValue(i,j);
+		float[][] outf = new float[endW-beginW + 1][endH-beginH + 1];
+		for (int i = 0; i < endW-beginW + 1; i++) {
+			for (int j = 0; j < endH-beginH + 1; j++) {
+				outf[i][j]= mat.getPixelValue(i + beginW,j + beginH);
 			}
 		}
 		ImageProcessor out = new FloatProcessor(outf);
-		return null;
+		return out;
 	}
 
 	private static ImageProcessor padarray(ImageProcessor in, int nx, int ny) { //chyba done
@@ -476,39 +476,22 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return result;
 	}
 	
-	private static void fftshift(ImageProcessor mat) {
-		//TODO
-
-//		ImageProcessor m1 = mat.rowRange(0, 0).colRange(mat.getHeight() / 2, mat.getWidth() / 2);
-//		ImageProcessor m2 = mat.rowRange(0, mat.getWidth() / 2).colRange(mat.getHeight() / 2, mat.getWidth() / 2);
-//		ImageProcessor m3 = mat.rowRange(mat.getHeight() / 2, 0).colRange(mat.getHeight() / 2, mat.getWidth() / 2);
-//		ImageProcessor m4 = mat.rowRange(mat.getHeight() / 2, mat.getHeight() / 2).colRange(mat.getHeight() / 2, mat.getWidth() / 2);
-		Point p1 = new Point(0, 0);
-		Point p2 = new Point(0, (int)mat.getWidth() / 2);
-		Point p3 = new Point((int)mat.getHeight() / 2, 0);
-		Point p4 = new Point((int)mat.getHeight() / 2, (int)mat.getWidth() / 2);
-		Rect r1 = new Rect(0, 0, mat.getHeight() / 2, mat.getWidth() / 2);
-		Rect r2 = new Rect(0, mat.getWidth() / 2, mat.getHeight() / 2, mat.getWidth() / 2);
-		Rect r3 = new Rect(mat.getHeight() / 2, 0, mat.getHeight() / 2, mat.getWidth() / 2);
-		Rect r4 = new Rect(mat.getHeight() / 2, mat.getHeight() / 2, mat.getHeight() / 2, mat.getWidth() / 2);
-		ImageProcessor m1 = mat.submat(r1);
-		ImageProcessor m2 = mat.submat(r2); 
-		ImageProcessor m3 = mat.submat(r3);
-		ImageProcessor m4 = mat.submat(r4);
+	private static ImageProcessor fftshift(ImageProcessor mat) {
+						
+		float[][] shift = new float[mat.getWidth()][mat.getHeight()];
+		float[][] pixelsCopy = mat.getFloatArray();
 		
-		double[] b1 = new double[(int)m1.total() * mat.channels()];
-		m1.get(0, 0, b1);
-		double[] b2 = new double[(int)m2.total() * mat.channels()];
-		m2.get(0, 0, b2);
-		double[] b3 = new double[(int)m3.total() * mat.channels()];
-		m3.get(0, 0, b3);
-		double[] b4 = new double[(int)m4.total() * mat.channels()];
-		m4.get(0, 0, b4);
+		for (int i = 0; i < mat.getWidth() / 2; i++) {
+			for (int j = 0; j < mat.getHeight() / 2; j++) {
+				shift[i][j] = pixelsCopy[i + mat.getWidth() / 2][j + mat.getHeight() / 2];
+				shift[i + mat.getWidth() / 2][j] = pixelsCopy[i][j + mat.getHeight() / 2];
+				shift[i][j + mat.getHeight() / 2] = pixelsCopy[i + mat.getWidth() / 2][j];
+				shift[i + mat.getWidth() / 2][j + mat.getHeight() / 2] = pixelsCopy[i][j];
+			}
+		}
 		
-		mat.put((int)p1.x, (int)p1.y, b4);
-		mat.put((int)p2.x, (int)p2.y, b3);
-		mat.put((int)p3.x, (int)p3.y, b2);
-		mat.put((int)p4.x, (int)p4.y, b1);
+		ImageProcessor ipshift = new FloatProcessor(shift);
+		return ipshift;
 		
 	}
 	
