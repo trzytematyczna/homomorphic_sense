@@ -136,7 +136,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			//GAUSSIAN!!
 //		else if (noiseType == GAUSSIAN){
 			Rn = absdiff(In, M1);
-			ImageProcessor lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
+			lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
 			lRn.log();
 			LPF2 = lpf(lRn,LPF);
 			LPF2.exp();
@@ -539,6 +539,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	
 
 	private static ImageProcessor filter2(ImageProcessor mask, ImageProcessor mat) {
+		///TODO:!!!!
+		
 		ImageProcessor kernel= flip(mask);
 		ImageProcessor out = new FloatProcessor(Convolution.convolute(mat, kernel));
 		return out;
