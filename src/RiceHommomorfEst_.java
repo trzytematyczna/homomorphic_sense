@@ -363,7 +363,6 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return null;
 	}
 	
-	private static ImageProcessor add(ImageProcessor mat1, ImageProcessor mat2) {
 
 	private static ImageProcessor filter2(ImageProcessor mat1, ImageProcessor mat2) {
 		ImageProcessor out = new ImageProcessor(mat1.getHeight(), mat1.getWidth(), mat1.type());
