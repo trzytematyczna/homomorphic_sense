@@ -6,6 +6,9 @@ import java.util.Properties;
 
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_1D;
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_2D;
+import ij.ImagePlus;
+import ij.io.FileSaver;
+import ij.measure.ResultsTable;
 import ij.plugin.GaussianBlur3D;
 import ij.plugin.TextReader;
 import ij.plugin.filter.GaussianBlur;
@@ -104,15 +107,7 @@ public class Main {
 //		float[] d = {3,4,5,6};
 //		float[][] ppp = {a,b,c,d};
 //	   ImageProcessor mat = new FloatProcessor(ppp);
-//	   System.out.println(mat.getWidth());
-//	   System.out.println(mat.getHeight());
-//	   float[] f1={1,0,0};
-//	   float[] f2={0,1,0};
-//	   float[] f3={1,0,0};
-//	   
-//	   float[][] fil = {f1,f2,f3};
-//	   
-//	   ImageProcessor filter = new FloatProcessor(fil);
+			   
 	   
 //	   filter = RiceHommomorfEst_.rotateMatrixRight(RiceHommomorfEst_.rotateMatrixRight(filter));
 //

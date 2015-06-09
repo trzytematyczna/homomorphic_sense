@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import ij.*;
+import ij.io.FileSaver;
 import ij.measure.ResultsTable;
 import ij.plugin.TextReader;
 import ij.plugin.filter.PlugInFilter;
@@ -47,12 +48,19 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		ResultsTable rician =  ResultsTable.createTableFromImage(res[0]);
 		ResultsTable gauss =  ResultsTable.createTableFromImage(res[1]);
 		
-		try {
-			rician.saveAs(output_filename_Rician);
-			gauss.saveAs(output_filename_Gaussian);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		ImagePlus rician_plus = new ImagePlus("rician", res[0]);
+		FileSaver fs_rician = new FileSaver(rician_plus);
+		ImagePlus gauss_plus = new ImagePlus("gauss", res[1]);
+		FileSaver fs_gauss = new FileSaver(gauss_plus);
+		
+		fs_rician.saveAsText(new File(output_filename_Rician).getAbsolutePath());
+		fs_gauss.saveAsText(new File(output_filename_Gaussian).getAbsolutePath());
+//		try {
+//			rician.saveAs(output_filename_Rician);
+//			gauss.saveAs(output_filename_Gaussian);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	@Override
