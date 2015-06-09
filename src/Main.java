@@ -1,15 +1,11 @@
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_1D;
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_2D;
-import edu.emory.mathcs.jtransforms.fft.FloatFFT_1D;
-import edu.emory.mathcs.jtransforms.fft.FloatFFT_2D;
-import ij.ImagePlus;
 import ij.plugin.TextReader;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 
 
 public class Main {
-	
 	public static void main(String[] args) {
 		
 //		System.loadLibrary("opencv_java300");
