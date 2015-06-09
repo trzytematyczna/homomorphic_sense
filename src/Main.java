@@ -1,3 +1,9 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Properties;
+
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_1D;
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_2D;
 import ij.plugin.TextReader;
@@ -9,11 +15,8 @@ public class Main {
 	public static void main(String[] args) {
 		
 //		System.loadLibrary("opencv_java300");
-		
-		TextReader textReader = new TextReader();
-		ImageProcessor mriIp = textReader.open("res/MR_noisy.csv");
-		ImageProcessor snrIp = textReader.open("res/MR_SNR.csv");
 //		
+		
 //		for (int i = 0; i < 5; i++) {
 //			System.out.println(((float[])mriIp.getPixels())[i]);
 //		}

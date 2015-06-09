@@ -41,7 +41,6 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		TextReader textReader = new TextReader();
 		ImageProcessor mriIp = textReader.open("res/MR_noisy.csv");
 		ImageProcessor snrIp = textReader.open("res/MR_SNR.csv");
-		
 		ImageProcessor[] res = rice_hommomorf_est(mriIp, snrIp, lpf_f,lpf_f_SNR, lpf_f_Rice, 
 				ex_filter_type,ex_window_size, ex_iterations);
 		
@@ -71,9 +70,13 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			lpf_f_SNR = Double.parseDouble(properties.getProperty("lpf_f_SNR"));
 			lpf_f_Rice = Double.parseDouble(properties.getProperty("lpf_f_Rice"));
 			input_filename = properties.getProperty("input_filename");
+			input_filename = input_filename.replace("'", "");
 			input_filenameSNR = properties.getProperty("input_filenameSNR");
+			input_filenameSNR = input_filenameSNR.replace("'", "");
 			output_filename_Gaussian = properties.getProperty("output_filename_Gaussian");
+			output_filename_Gaussian = output_filename_Gaussian.replace("'", "");
 			output_filename_Rician = properties.getProperty("output_filename_Rician");
+			output_filename_Rician = output_filename_Rician.replace("'", "");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
