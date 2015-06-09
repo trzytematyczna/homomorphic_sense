@@ -538,19 +538,11 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 
-	private static ImageProcessor filter2(ImageProcessor mask, ImageProcessor mat) {
-		///TODO:!!!!
-		
-		ImageProcessor kernel= flip(mask);
-		ImageProcessor out = new FloatProcessor(Convolution.convolute(mat, kernel));
-		return out;
+	static ImageProcessor filter2(ImageProcessor mask, ImageProcessor mat) {
+		mat.convolve((float [])mat.getPixels(), mask.getWidth(), mask.getHeight());
+		return mat;
 	}
 	
-	
-	private static ImageProcessor flip(ImageProcessor mask) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	private static ImageProcessor add(ImageProcessor mat1, ImageProcessor mat2) { //done
 		float[][] outf = new float[mat1.getWidth()][mat1.getHeight()];
