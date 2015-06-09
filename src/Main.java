@@ -8,6 +8,7 @@ import edu.emory.mathcs.jtransforms.dct.FloatDCT_1D;
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_2D;
 import ij.ImagePlus;
 import ij.io.FileSaver;
+import ij.io.OpenDialog;
 import ij.measure.ResultsTable;
 import ij.plugin.GaussianBlur3D;
 import ij.plugin.TextReader;
@@ -107,7 +108,6 @@ public class Main {
 //		float[] d = {3,4,5,6};
 //		float[][] ppp = {a,b,c,d};
 //	   ImageProcessor mat = new FloatProcessor(ppp);
-			   
 	   
 //	   filter = RiceHommomorfEst_.rotateMatrixRight(RiceHommomorfEst_.rotateMatrixRight(filter));
 //

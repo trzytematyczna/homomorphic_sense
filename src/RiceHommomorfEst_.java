@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import ij.*;
 import ij.io.FileSaver;
+import ij.io.OpenDialog;
 import ij.measure.ResultsTable;
 import ij.plugin.TextReader;
 import ij.plugin.filter.PlugInFilter;
@@ -66,7 +67,9 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	@Override
 	public int setup(String arg0, ImagePlus arg1) {
 		try {
-			File file = new File("C://Users//MZ//workspace//homomorphic_sense//res//properties");
+   		    OpenDialog dialog = new OpenDialog("Choose properties file!");
+		    String path_prop =dialog.getPath();
+			File file = new File(path_prop);
 			FileInputStream fileInput = new FileInputStream(file);
 			Properties properties = new Properties();
 			properties.load(fileInput);
