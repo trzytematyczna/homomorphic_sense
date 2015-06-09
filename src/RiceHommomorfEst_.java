@@ -229,7 +229,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return Fc;
 	}
 
-	public static ImageProcessor filter2b(ImageProcessor h, ImageProcessor I) {
+	public static ImageProcessor filter2(ImageProcessor h, ImageProcessor I) {
 		int Mx = h.getHeight();
 		int My = h.getWidth();
 		
@@ -502,7 +502,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		ImageProcessor Mask = divide(createImage(Ws[1],Ws[0], 1.0), prod);
 		
 //		a_k=sqrt(sqrt(max(2.*filter2B(Mask,In.^2).^2-filter2B(Mask,In.^4),0)));
-		ImageProcessor a_k = sqrt(max(substract(multiply(pow(filter2b(Mask, pow(In, 2)), 2), 2), filter2b(Mask, pow(In, 4))), 0));
+		ImageProcessor a_k = sqrt(sqrt(max(substract(multiply(pow(filter2b(Mask, pow(In, 2)), 2), 2), filter2b(Mask, pow(In, 4))), 0)));
 		
 //		sigma_k2=0.5.*max(filter2B(Mask,In.^2)-a_k.^2,0.01);
 		ImageProcessor sigma_k2 = multiply(max(substract(filter2b(Mask, pow(In, 2)), pow(a_k, 2)), 0.01), 0.5);
@@ -667,10 +667,11 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 
-	static ImageProcessor filter2(ImageProcessor mask, ImageProcessor mat) {
-		mat.convolve((float [])mask.getPixels(), mask.getWidth(), mask.getHeight());
-		mat = multiply(mat, sum(mask));
-		return mat;
+	public static ImageProcessor filter2b(ImageProcessor mask, ImageProcessor mat) {
+		ImageProcessor matout = new FloatProcessor(mat.getFloatArray());
+		matout.convolve((float [])mask.getPixels(), mask.getWidth(), mask.getHeight());
+		matout = multiply(matout, sum(mask));
+		return matout;
 	}
 	
 
@@ -721,8 +722,9 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	
 	public static ImageProcessor pow(ImageProcessor mat, double power) {//done
 		ImageProcessor matout = new FloatProcessor(mat.getFloatArray());
-		for(int i=0; i<power; i++){
-			matout = multiply(matout, matout);			
+		ImageProcessor mattmp = new FloatProcessor(mat.getFloatArray());
+		for (int i=0; i < power - 1; i++) {
+			matout = multiply(matout, mattmp);			
 		}
 		return matout;
 	}
