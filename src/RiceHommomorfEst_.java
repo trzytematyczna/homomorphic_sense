@@ -40,9 +40,15 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	
 	@Override
 	public void run(ImageProcessor arg0) {
+		
+		System.out.println("Running...");
+		
+		System.out.println("Reading images...");
 		TextReader textReader = new TextReader();
 		ImageProcessor mriIp = textReader.open(input_filename);
 		ImageProcessor snrIp = textReader.open(input_filenameSNR);
+		
+		System.out.println("rice_hommomorf_est...");
 		ImageProcessor[] res = rice_hommomorf_est(mriIp, snrIp, lpf_f,lpf_f_SNR, lpf_f_Rice, 
 				ex_filter_type,ex_window_size, ex_iterations);
 		
@@ -56,6 +62,10 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 		fs_rician.saveAsText(new File(output_filename_Rician).getAbsolutePath());
 		fs_gauss.saveAsText(new File(output_filename_Gaussian).getAbsolutePath());
+		
+		rician_plus.show();
+		gauss_plus.show();
+		
 //		try {
 //			rician.saveAs(output_filename_Rician);
 //			gauss.saveAs(output_filename_Gaussian);
@@ -67,6 +77,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	@Override
 	public int setup(String arg0, ImagePlus arg1) {
 		try {
+			System.out.print("Running setup...");
+			
    		    OpenDialog dialog = new OpenDialog("Choose properties file!");
 		    String path_prop =dialog.getPath();
 			File file = new File(path_prop);
@@ -94,6 +106,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			e.printStackTrace();
 		}
 		
+		System.out.println("DONE");
 		return  DOES_ALL+NO_IMAGE_REQUIRED;
 	}
 	
@@ -112,14 +125,16 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 		int[] Ws = {winsize, winsize};
 		
+		System.out.println("em_ml_rice2D...");
 		ImageProcessor [] em_ml = em_ml_rice2D(In, iteration_no, Ws);
 		ImageProcessor M2 = em_ml[0];
 		ImageProcessor Sigma_n = em_ml[1];
 		ImageProcessor M1;
 		
-		
+		System.out.println("lpf...");
 		Sigma_n = lpf(Sigma_n, (float)lpfSNR);
 		
+		System.out.println("filter2b...");
 		M1 = filter2b(createImage(5, 5, 0.25), In);
 		
 		if(SNR.getHeight() == 1 && SNR.getHeight() == 0){
@@ -137,6 +152,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 
 		//RICIAN!!
 //		if(noiseType == RICIAN){
+		System.out.println("RICIAN...");
 			if(Modo == 1){
 				LocalMean = M1;
 			}
@@ -148,12 +164,16 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			}
 			
 			Rn = absdiff(In, LocalMean);
-					
+				
+			System.out.println("lRn...");
 			ImageProcessor lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
 			lRn.log();
+			System.out.println("lfp...");
 			LPF2 = lpf(lRn, (float)LPF);
+			System.out.println("correct_rice_gauss...");
 			Fc1 = correct_rice_gauss(SNR);
 			LPF1 = substract(LPF2,Fc1);
+			System.out.println("lpf...");
 			LPF1 = lpf(LPF1, (float)lpfRice, 2);
 			LPF1.exp();
 			ImageProcessor Mapa1 = LPF1;
@@ -165,7 +185,9 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 			//GAUSSIAN!!
 //		else if (noiseType == GAUSSIAN){
+			System.out.println("GAUSSIAN...");
 			Rn = absdiff(In, M1);
+			System.out.println("lRn...");
 			lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
 			lRn.log();
 			LPF2 = lpf(lRn,(float)LPF);
@@ -179,6 +201,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		result[0] = MapaR;
 		result[1] = MapaG;
 		
+		System.out.println("DONE");
 		return result;
 	}
 
