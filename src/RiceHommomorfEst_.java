@@ -186,7 +186,6 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 //		else if (noiseType == GAUSSIAN){
 			System.out.println("GAUSSIAN...");
 			Rn = absdiff(In, M1);
-			System.out.println("lRn...");
 			lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
 			lRn.log();
 			LPF2 = lpf(lRn,(float)LPF);
