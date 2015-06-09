@@ -39,8 +39,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	@Override
 	public void run(ImageProcessor arg0) {
 		TextReader textReader = new TextReader();
-		ImageProcessor mriIp = textReader.open("res/MR_noisy.csv");
-		ImageProcessor snrIp = textReader.open("res/MR_SNR.csv");
+		ImageProcessor mriIp = textReader.open(input_filename);
+		ImageProcessor snrIp = textReader.open(input_filenameSNR);
 		ImageProcessor[] res = rice_hommomorf_est(mriIp, snrIp, lpf_f,lpf_f_SNR, lpf_f_Rice, 
 				ex_filter_type,ex_window_size, ex_iterations);
 		
