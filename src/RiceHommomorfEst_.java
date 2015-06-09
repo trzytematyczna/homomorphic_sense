@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import ij.*;
+import ij.gui.GenericDialog;
 import ij.io.FileSaver;
 import ij.io.OpenDialog;
 import ij.measure.ResultsTable;
@@ -49,9 +50,16 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		ImageProcessor snrIp = textReader.open(input_filenameSNR);
 		
 		System.out.println("rice_hommomorf_est...");
+		long start = System.currentTimeMillis();
 		ImageProcessor[] res = rice_hommomorf_est(mriIp, snrIp, lpf_f,lpf_f_SNR, lpf_f_Rice, 
 				ex_filter_type,ex_window_size, ex_iterations);
+		long finish = System.currentTimeMillis();
 		
+		String text = "Execution time: "+(finish-start)+" ms";
+		GenericDialog gd = new GenericDialog("New Image");
+		gd.addMessage(text);
+		gd.showDialog();
+
 		ResultsTable rician =  ResultsTable.createTableFromImage(res[0]);
 		ResultsTable gauss =  ResultsTable.createTableFromImage(res[1]);
 		
