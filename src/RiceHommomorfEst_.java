@@ -660,7 +660,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	
 
 	static ImageProcessor filter2(ImageProcessor mask, ImageProcessor mat) {
-		mat.convolve((float [])mat.getPixels(), mask.getWidth(), mask.getHeight());
+		mat.convolve((float [])mask.getPixels(), mask.getWidth(), mask.getHeight());
 		mat = multiply(mat, sum(mask));
 		return mat;
 	}
@@ -678,13 +678,15 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	public static ImageProcessor add(ImageProcessor mat, double value) {//done
-		mat.add(value);
-		return mat;
+		ImageProcessor matout = new FloatProcessor(mat.getFloatArray());
+		matout.add(value);
+		return matout;
 	}
 	
 	public static ImageProcessor abs(ImageProcessor mat) {//done
-		mat.abs();
-		return mat;
+		ImageProcessor matout = new FloatProcessor(mat.getFloatArray());
+		matout.abs();
+		return matout;
 	}
 	
 	public static ImageProcessor substract(ImageProcessor mat1, ImageProcessor mat2) { //done
@@ -704,15 +706,17 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	public static ImageProcessor sqrt(ImageProcessor mat) {//done
-		mat.sqrt();
-		return mat;
+		ImageProcessor matout = new FloatProcessor(mat.getFloatArray());
+		matout.sqrt();
+		return matout;
 	}
 	
 	public static ImageProcessor pow(ImageProcessor mat, double power) {//done
+		ImageProcessor matout = new FloatProcessor(mat.getFloatArray());
 		for(int i=0; i<power; i++){
-			mat = multiply(mat, mat);			
+			matout = multiply(matout, matout);			
 		}
-		return mat;
+		return matout;
 	}
 	
 	public static double max(ImageProcessor mat) { //done
@@ -759,8 +763,9 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	public static ImageProcessor divide(ImageProcessor mat, double value) {	//done
-		mat.multiply(1/value);
-		return mat;
+		ImageProcessor matout = new FloatProcessor(mat.getFloatArray());
+		matout.multiply(1/value);
+		return matout;
 	}
 	
 	public static ImageProcessor divide(double value, ImageProcessor mat) {	//done
@@ -835,8 +840,9 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	public static ImageProcessor multiply(ImageProcessor mat, double value) {	//done
-		mat.multiply(value);
-		return mat;
+		ImageProcessor matout = new FloatProcessor(mat.getFloatArray());
+		matout.multiply(value);
+		return matout;
 	}
 	public static ImageProcessor multiply(ImageProcessor mat1, ImageProcessor mat2) {	//done
 		float[][] outf = new float[mat1.getWidth()][mat1.getHeight()];
