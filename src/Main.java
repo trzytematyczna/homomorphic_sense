@@ -28,7 +28,7 @@ public class Main {
 //			System.out.println(" ");
 //		}
 		
-		ImageProcessor ip = fspecial(256,256,3.4f);
+		ImageProcessor ip = RiceHommomorfEst_.fspecial(256,256,3.4f);
 		System.out.println(ip.getPixelValue(128, 128));
 		System.out.println(ip.getPixelValue(50, 50));
 		System.out.println(ip.getPixelValue(100, 100));
@@ -160,27 +160,6 @@ public class Main {
 		
 		
 		
-	}
-	
-	private static ImageProcessor fspecial(int width, int height, float sigma) {
-		float[][] kernelMatrix = new float[height][width];
-		int x0 = width / 2;
-		int y0 = width / 2;
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				kernelMatrix[y][x] = (float) Math.exp(-(((x-x0)*(x-x0))/(2*sigma*sigma) + ((y-y0)*(y-y0))/(2*sigma*sigma)));
-			}
-		}
-		int kernelLength = height * width;
-		float[] kernel = new float[kernelLength];
-		int i = 0;
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < height; x++) {
-				kernel[i++] = kernelMatrix[y][x];
-			}
-		}
-		ImageProcessor kernelIP = new FloatProcessor(width, height, kernel);
-		return kernelIP;
 	}
 	
 }
