@@ -1,3 +1,5 @@
+import edu.emory.mathcs.jtransforms.dct.FloatDCT_1D;
+import edu.emory.mathcs.jtransforms.dct.FloatDCT_2D;
 import edu.emory.mathcs.jtransforms.fft.FloatFFT_1D;
 import edu.emory.mathcs.jtransforms.fft.FloatFFT_2D;
 import ij.ImagePlus;
@@ -16,11 +18,6 @@ public class Main {
 		ImageProcessor mriIp = textReader.open("res/MR_noisy.csv");
 		ImageProcessor snrIp = textReader.open("res/MR_SNR.csv");
 		
-		for (int i = 0; i < 5; i++) {
-			System.out.println(((float[])mriIp.getPixels())[i]);
-		}
-		System.out.println(mriIp.getPixelValue(0, 1));	
-		
 		
 //		FloatFFT_2D fft2d = new FloatFFT_2D(4, 2);
 //		fft2d.realForwardFull(a);
@@ -34,12 +31,25 @@ public class Main {
 //			System.out.println(" ");
 //		}
 		
-		ImageProcessor ii = fft(mriIp);
-		ii = fftshift(ii);
-		ii = fftshift(ii);
-		ImageProcessor ff = ifft(ii);
+		float[] a = {1, 2, 3, 4, 5, 6, 7, 8};
+		ImageProcessor tst = new FloatProcessor(8, 1, a);
 		
-		new ImagePlus("fft",ff).show();
+		ImageProcessor ii = dct(tst);
+		
+		for (int i = 0; i < ii.getPixelCount(); i++) {
+			System.out.printf("%.2f", ((float[])ii.getPixels())[i]);
+			System.out.print(" ");
+		} 
+		
+		System.out.println();
+		
+		ImageProcessor ff = idct(ii);
+
+		for (int i = 0; i < ff.getPixelCount(); i++) {
+			System.out.printf("%.2f", ((float[])ff.getPixels())[i]);
+			System.out.print(" ");
+		}
+		
 		
 //		System.out.println(mriIp.getPixelValue(0, 0));
 //		System.out.println(mriIp.getPixelValue(1, 1));
@@ -71,50 +81,37 @@ public class Main {
 		
 	}
 	
-	private static ImageProcessor fft(ImageProcessor ip) {
-		float[] pixelsAndZeros = new float[ip.getHeight() * ip.getWidth() * 2];
-		float[] pixels = (float[])ip.getPixels();
-		for (int i = 0; i < ip.getHeight() * ip.getWidth(); i++) {
-			pixelsAndZeros[i] = pixels[i];
-		}
-		for (int i = ip.getHeight() * ip.getWidth(); i < ip.getHeight() * ip.getWidth() * 2; i++) {
-			pixelsAndZeros[i] = 0;
-		}
-		FloatFFT_2D fft2d = new FloatFFT_2D(ip.getHeight(), ip.getWidth());
-		fft2d.realForwardFull(pixelsAndZeros);
-		ImageProcessor fftout = new FloatProcessor(ip.getWidth() * 2, ip.getHeight(), pixelsAndZeros);
-		return fftout;
-	}
 	
-	private static ImageProcessor ifft(ImageProcessor ip) {
-		float[] pixelsCopy = (float[])ip.getPixelsCopy();
-		FloatFFT_2D fft2d = new FloatFFT_2D(ip.getHeight(), ip.getWidth() / 2);
-		fft2d.complexInverse(pixelsCopy, true);
-		float[] pixels = new float[ip.getHeight() * ip.getWidth() / 2];
-		for (int i = 0; i < ip.getHeight() * ip.getWidth() / 2; i++) {
-			pixels[i] = pixelsCopy[i * 2];
-		}
-		ImageProcessor ifftout = new FloatProcessor(ip.getWidth() / 2, ip.getHeight(), pixels);
-		return ifftout;
+	private static ImageProcessor idct2(ImageProcessor ip) {
+		float[] pixelsCopy = (float[]) ip.getPixelsCopy();
+		FloatDCT_2D dct2d = new FloatDCT_2D(ip.getHeight(), ip.getWidth());
+		dct2d.inverse(pixelsCopy, true);
+		ImageProcessor dct2out = new FloatProcessor(ip.getWidth(), ip.getHeight(), pixelsCopy);
+		return dct2out;
 	}
-	
-	private static ImageProcessor fftshift(ImageProcessor mat) {
-		
-		float[][] shift = new float[mat.getWidth()][mat.getHeight()];
-		float[][] pixelsCopy = mat.getFloatArray();
-		
-		for (int i = 0; i < mat.getWidth() / 2; i++) {
-			for (int j = 0; j < mat.getHeight() / 2; j++) {
-				shift[i][j] = pixelsCopy[i + mat.getWidth() / 2][j + mat.getHeight() / 2];
-				shift[i + mat.getWidth() / 2][j] = pixelsCopy[i][j + mat.getHeight() / 2];
-				shift[i][j + mat.getHeight() / 2] = pixelsCopy[i + mat.getWidth() / 2][j];
-				shift[i + mat.getWidth() / 2][j + mat.getHeight() / 2] = pixelsCopy[i][j];
-			}
-		}
-		
-		ImageProcessor ipshift = new FloatProcessor(shift);
-		return ipshift;
-		
+
+	private static ImageProcessor dct2(ImageProcessor ip) {
+		float[] pixelsCopy = (float[]) ip.getPixelsCopy();
+		FloatDCT_2D dct2d = new FloatDCT_2D(ip.getHeight(), ip.getWidth());
+		dct2d.forward(pixelsCopy, true);
+		ImageProcessor dct2out = new FloatProcessor(ip.getWidth(), ip.getHeight(), pixelsCopy);
+		return dct2out;
+	}
+
+	private static ImageProcessor idct(ImageProcessor ip) {
+		float[] pixelsCopy = (float[]) ip.getPixelsCopy();
+		FloatDCT_1D dct1d = new FloatDCT_1D(ip.getWidth());
+		dct1d.inverse(pixelsCopy, true);
+		ImageProcessor dct2out = new FloatProcessor(ip.getWidth(), 1, pixelsCopy);
+		return dct2out;
+	}
+
+	private static ImageProcessor dct(ImageProcessor ip) {
+		float[] pixelsCopy = (float[]) ip.getPixelsCopy();
+		FloatDCT_1D dct1d = new FloatDCT_1D(ip.getWidth());
+		dct1d.forward(pixelsCopy, true);
+		ImageProcessor dct2out = new FloatProcessor(ip.getWidth(), 1, pixelsCopy);
+		return dct2out;
 	}
 	
 }

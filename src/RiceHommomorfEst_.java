@@ -12,6 +12,8 @@ import ij.plugin.filter.PlugInFilter;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.FloatProcessor;
+import edu.emory.mathcs.jtransforms.dct.FloatDCT_1D;
+import edu.emory.mathcs.jtransforms.dct.FloatDCT_2D;
 import edu.emory.mathcs.jtransforms.fft.*;
 
 public class RiceHommomorfEst_ implements PlugInFilter {
@@ -223,59 +225,49 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 
 	private static ImageProcessor lpf(ImageProcessor I, double sigma, int MODO) {
-		//TODO
 
 		if (MODO == 1) {
 			int Mx = I.getHeight();
 			int My = I.getWidth();
-			ImageProcessor h = Imgproc.getGaussianKernel(I.getHeight() , sigma, CvType.CV_64F);
+			ImageProcessor h = null;//Imgproc.getGaussianKernel(I.getHeight() , sigma, CvType.CV_64F); TODO
+			
 			h = divide(h, max(h));
 			if (Mx == 1 ||My == 1) {
-				ImageProcessor lRnF = new ImageProcessor(I.size(), I.type());
-				Core.dft(I, lRnF);
-				fftshift(lRnF);
+				ImageProcessor lRnF = fftshift(fft(I));
 				ImageProcessor lRnF2 = multiply(lRnF, h);
-				fftshift(lRnF2);
-				ImageProcessor If = new ImageProcessor(I.size(), I.type());
-				Core.idft(lRnF2, If);
+				ImageProcessor If = ifft(fftshift(lRnF2));
 				return If;
 			}
 			else {
-				ImageProcessor lRnF = new ImageProcessor(I.size(), I.type());
-				Core.dft(I, lRnF);
-				fftshift(lRnF);
+				ImageProcessor lRnF = fftshift(fft2(I));
 				ImageProcessor lRnF2 = multiply(lRnF, h);
-				fftshift(lRnF2);
-				ImageProcessor If = new ImageProcessor(I.size(), I.type());
-				Core.idft(lRnF2, If);
+				ImageProcessor If = ifft2(fftshift(lRnF2));
 				return If;
 			}
-		} else if (MODO == 2) {
+		}
+		else if (MODO == 2) {
 			int Mx = I.getHeight();
 			int My = I.getWidth();
-			ImageProcessor h = Imgproc.getGaussianKernel(I.getHeight() * 2 , sigma * 2, CvType.CV_64F);
+			ImageProcessor h = null;//Imgproc.getGaussianKernel(I.getHeight() * 2 , sigma * 2, CvType.CV_64F); //TODO
 			h = divide(h, max(h));
-			h = h.submat(new Range(Mx + 1, h.getHeight()), new Range(My + 1, h.getWidth()));
+			h = submatrix(h, Mx + 1, h.getHeight() - 1, My + 1, h.getWidth() - 1);
+			
 			if (Mx == 1 ||My == 1) {
-				ImageProcessor lRnF = new ImageProcessor(I.size(), I.type());
-				Core.dct(I, lRnF);
+				ImageProcessor lRnF = fftshift(dct(I));
 				ImageProcessor lRnF2 = multiply(lRnF, h);
-				ImageProcessor If = new ImageProcessor(I.size(), I.type());
-				Core.idct(lRnF2, If);
+				ImageProcessor If = idct(fftshift(lRnF2));
 				return If;
 			}
 			else {
-				ImageProcessor lRnF = new ImageProcessor(I.size(), I.type());
-				Core.dct(I, lRnF);
+				ImageProcessor lRnF = fftshift(dct2(I));
 				ImageProcessor lRnF2 = multiply(lRnF, h);
-				ImageProcessor If = new ImageProcessor(I.size(), I.type());
-				Core.idct(lRnF2, If);
+				ImageProcessor If = idct2(fftshift(lRnF2));
 				return If;
 			}
 		}
 		return null;
 	}
-	
+
 	private static ImageProcessor approxI1_I0(ImageProcessor z) {
 		//TODO: finish
 
@@ -476,6 +468,38 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return result;
 	}
 	
+	private static ImageProcessor idct2(ImageProcessor ip) {
+		float[] pixelsCopy = (float[]) ip.getPixelsCopy();
+		FloatDCT_2D dct2d = new FloatDCT_2D(ip.getHeight(), ip.getWidth());
+		dct2d.inverse(pixelsCopy, true);
+		ImageProcessor dct2out = new FloatProcessor(ip.getWidth(), ip.getHeight(), pixelsCopy);
+		return dct2out;
+	}
+
+	private static ImageProcessor dct2(ImageProcessor ip) {
+		float[] pixelsCopy = (float[]) ip.getPixelsCopy();
+		FloatDCT_2D dct2d = new FloatDCT_2D(ip.getHeight(), ip.getWidth());
+		dct2d.forward(pixelsCopy, true);
+		ImageProcessor dct2out = new FloatProcessor(ip.getWidth(), ip.getHeight(), pixelsCopy);
+		return dct2out;
+	}
+
+	private static ImageProcessor idct(ImageProcessor ip) {
+		float[] pixelsCopy = (float[]) ip.getPixelsCopy();
+		FloatDCT_1D dct1d = new FloatDCT_1D(ip.getWidth());
+		dct1d.inverse(pixelsCopy, true);
+		ImageProcessor dct2out = new FloatProcessor(ip.getWidth(), 1, pixelsCopy);
+		return dct2out;
+	}
+
+	private static ImageProcessor dct(ImageProcessor ip) {
+		float[] pixelsCopy = (float[]) ip.getPixelsCopy();
+		FloatDCT_1D dct1d = new FloatDCT_1D(ip.getWidth());
+		dct1d.forward(pixelsCopy, true);
+		ImageProcessor dct2out = new FloatProcessor(ip.getWidth(), 1, pixelsCopy);
+		return dct2out;
+	}
+	
 	private static ImageProcessor fftshift(ImageProcessor mat) {
 						
 		float[][] shift = new float[mat.getWidth()][mat.getHeight()];
@@ -496,6 +520,33 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	private static ImageProcessor fft(ImageProcessor ip) {
+		float[] pixelsAndZeros = new float[ip.getWidth() * 2];
+		float[] pixels = (float[])ip.getPixels();
+		for (int i = 0; i < ip.getWidth(); i++) {
+			pixelsAndZeros[i] = pixels[i];
+		}
+		for (int i = ip.getWidth(); i < ip.getWidth() * 2; i++) {
+			pixelsAndZeros[i] = 0;
+		}
+		FloatFFT_1D fft1d = new FloatFFT_1D(ip.getWidth());
+		fft1d.realForwardFull(pixelsAndZeros);
+		ImageProcessor fftout = new FloatProcessor(ip.getWidth() * 2, 1, pixelsAndZeros);
+		return fftout;
+	}
+	
+	private static ImageProcessor ifft(ImageProcessor ip) {
+		float[] pixelsCopy = (float[])ip.getPixelsCopy();
+		FloatFFT_1D fft1d = new FloatFFT_1D(ip.getWidth() / 2);
+		fft1d.complexInverse(pixelsCopy, true);
+		float[] pixels = new float[ip.getWidth() / 2];
+		for (int i = 0; i < ip.getWidth() / 2; i++) {
+			pixels[i] = pixelsCopy[i * 2];
+		}
+		ImageProcessor ifftout = new FloatProcessor(ip.getWidth() / 2, 1, pixels);
+		return ifftout;
+	}
+	
+	private static ImageProcessor fft2(ImageProcessor ip) {
 		float[] pixelsAndZeros = new float[ip.getHeight() * ip.getWidth() * 2];
 		float[] pixels = (float[])ip.getPixels();
 		for (int i = 0; i < ip.getHeight() * ip.getWidth(); i++) {
@@ -510,7 +561,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return fftout;
 	}
 	
-	private static ImageProcessor ifft(ImageProcessor ip) {
+	private static ImageProcessor ifft2(ImageProcessor ip) {
 		float[] pixelsCopy = (float[])ip.getPixelsCopy();
 		FloatFFT_2D fft2d = new FloatFFT_2D(ip.getHeight(), ip.getWidth() / 2);
 		fft2d.complexInverse(pixelsCopy, true);
