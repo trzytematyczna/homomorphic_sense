@@ -58,7 +58,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	@Override
 	public int setup(String arg0, ImagePlus arg1) {
 		try {
-			File file = new File("C://Users//MZ//workspace//homomorphic_sense//res//properties");
+			File file = new File("res/properties");
 			FileInputStream fileInput = new FileInputStream(file);
 			Properties properties = new Properties();
 			properties.load(fileInput);
@@ -220,14 +220,21 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return out;
 	}
 
-	public static ImageProcessor padarray(ImageProcessor in, int nx, int ny) { //chyba done
-		int rows = in.getHeight() + nx * in.getHeight();
-		int cols = in.getWidth() + ny * in.getWidth();
+	public static ImageProcessor padarray(ImageProcessor in, int nx, int ny) {
+		int rows = in.getHeight() + ny * 2;
+		int cols = in.getWidth() + nx * 2;
 		float[][] outf = new float[rows][cols];
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < cols; j++) {
-				float value = in.get(i / (1 + nx), j / (1 + ny));
-				outf[i][j]= value;
+		for (int y = 0; y < rows; y++) {
+			for (int x = 0; x < cols; x++) {
+				int cx = -1;
+				int cy = -1;
+				if (x < nx) cx = 0;
+				else if (x < nx + in.getWidth()) cx = x - nx;
+				else cx = in.getWidth() - 1;
+				if (y < ny) cy = 0;
+				else if (y < ny + in.getHeight()) cy = y - ny;
+				else cy = in.getHeight() - 1;
+				outf[y][x] = in.getPixelValue(cx, cy);
 			}
 		}
 		ImageProcessor output = new FloatProcessor(outf);

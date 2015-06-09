@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
+import sun.security.krb5.internal.PAData;
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_1D;
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_2D;
 import ij.plugin.GaussianBlur3D;
@@ -16,8 +17,20 @@ import ij.process.ImageProcessor;
 public class Main {
 	public static void main(String[] args) {
 		
-//		System.loadLibrary("opencv_java300");
-//		
+		RiceHommomorfEst_ rhe = new RiceHommomorfEst_();
+		rhe.setup("homm", null);
+		rhe.run(null);
+		
+//		float[] a = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+//		ImageProcessor I = new FloatProcessor(3, 3, a);
+//		I = RiceHommomorfEst_.padarray(I, 2, 2);
+//		System.out.println(I.getWidth() + " " + I.getHeight());
+//		for (int i = 0; i < I.getWidth(); i++) {
+//			for (int j = 0; j < I.getHeight(); j++) {
+//				System.out.print(I.getPixelValue(i, j) + " ");
+//			}
+//			System.out.println();
+//		}
 		
 //		for (int i = 0; i < 5; i++) {
 //			System.out.println(((float[])mriIp.getPixels())[i]);
@@ -31,12 +44,12 @@ public class Main {
 //			System.out.println(" ");
 //		}
 		
-		ImageProcessor ip = RiceHommomorfEst_.fspecial(256,256,3.4f);
-		System.out.println(ip.getPixelValue(128, 128));
-		System.out.println(ip.getPixelValue(50, 50));
-		System.out.println(ip.getPixelValue(100, 100));
-		System.out.println(ip.getPixelValue(50, 100));
-		System.out.println(ip.getPixelValue(100, 50));
+//		ImageProcessor ip = RiceHommomorfEst_.fspecial(256,256,3.4f);
+//		System.out.println(ip.getPixelValue(128, 128));
+//		System.out.println(ip.getPixelValue(50, 50));
+//		System.out.println(ip.getPixelValue(100, 100));
+//		System.out.println(ip.getPixelValue(50, 100));
+//		System.out.println(ip.getPixelValue(100, 50));
 		
 //		FloatFFT_2D fft2d = new FloatFFT_2D(4, 2);
 //		fft2d.realForwardFull(a);
