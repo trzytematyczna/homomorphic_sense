@@ -21,8 +21,8 @@ public class Main {
 		rhe.setup("homm", null);
 		rhe.run(null);
 		
-//		float[] a = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-//		ImageProcessor I = new FloatProcessor(3, 3, a);
+//		float[] a = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+//		ImageProcessor I = new FloatProcessor(3, 4, a);
 //		I = RiceHommomorfEst_.padarray(I, 2, 2);
 //		System.out.println(I.getWidth() + " " + I.getHeight());
 //		for (int i = 0; i < I.getWidth(); i++) {
