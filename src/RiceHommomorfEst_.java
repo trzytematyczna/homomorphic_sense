@@ -604,6 +604,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 
 	static ImageProcessor filter2(ImageProcessor mask, ImageProcessor mat) {
 		mat.convolve((float [])mat.getPixels(), mask.getWidth(), mask.getHeight());
+		mat = multiply(mat, sum(mask));
 		return mat;
 	}
 	
