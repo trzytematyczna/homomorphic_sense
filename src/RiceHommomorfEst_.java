@@ -55,6 +55,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		ResultsTable rician =  ResultsTable.createTableFromImage(res[0]);
 		ResultsTable gauss =  ResultsTable.createTableFromImage(res[1]);
 		
+		System.out.println("Saving images...");
 		ImagePlus rician_plus = new ImagePlus("rician", res[0]);
 		FileSaver fs_rician = new FileSaver(rician_plus);
 		ImagePlus gauss_plus = new ImagePlus("gauss", res[1]);
@@ -63,6 +64,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		fs_rician.saveAsText(new File(output_filename_Rician).getAbsolutePath());
 		fs_gauss.saveAsText(new File(output_filename_Gaussian).getAbsolutePath());
 		
+		
+		System.out.println("Showing images...");
 		rician_plus.show();
 		gauss_plus.show();
 		
@@ -72,6 +75,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 //		} catch (IOException e) {
 //			e.printStackTrace();
 //		}
+		
 	}
 
 	@Override
@@ -131,10 +135,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		ImageProcessor Sigma_n = em_ml[1];
 		ImageProcessor M1;
 		
-		System.out.println("lpf...");
 		Sigma_n = lpf(Sigma_n, (float)lpfSNR);
 		
-		System.out.println("filter2b...");
 		M1 = filter2b(createImage(5, 5, 0.25), In);
 		
 		if(SNR.getHeight() == 1 && SNR.getHeight() == 0){
@@ -165,15 +167,12 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			
 			Rn = absdiff(In, LocalMean);
 				
-			System.out.println("lRn...");
 			ImageProcessor lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
 			lRn.log();
-			System.out.println("lfp...");
 			LPF2 = lpf(lRn, (float)LPF);
 			System.out.println("correct_rice_gauss...");
 			Fc1 = correct_rice_gauss(SNR);
 			LPF1 = substract(LPF2,Fc1);
-			System.out.println("lpf...");
 			LPF1 = lpf(LPF1, (float)lpfRice, 2);
 			LPF1.exp();
 			ImageProcessor Mapa1 = LPF1;
