@@ -229,7 +229,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		if (MODO == 1) {
 			int Mx = I.getHeight();
 			int My = I.getWidth();
-			ImageProcessor h = null;//Imgproc.getGaussianKernel(I.getHeight() , sigma, CvType.CV_64F); TODO
+			ImageProcessor h = fspecial(I.getWidth(), I.getHeight() , sigma);
 			
 			h = divide(h, max(h));
 			if (Mx == 1 ||My == 1) {
@@ -466,6 +466,27 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		result[1] = sqrt(sigma_k2);
 		
 		return result;
+	}
+	
+	private static ImageProcessor fspecial(int width, int height, float sigma) {
+		float[][] kernelMatrix = new float[height][width];
+		int x0 = width / 2;
+		int y0 = width / 2;
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				kernelMatrix[y][x] = (float) Math.exp(-(((x-x0)*(x-x0))/(2*sigma*sigma) + ((y-y0)*(y-y0))/(2*sigma*sigma)));
+			}
+		}
+		int kernelLength = height * width;
+		float[] kernel = new float[kernelLength];
+		int i = 0;
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < height; x++) {
+				kernel[i++] = kernelMatrix[y][x];
+			}
+		}
+		ImageProcessor kernelIP = new FloatProcessor(width, height, kernel);
+		return kernelIP;
 	}
 	
 	private static ImageProcessor idct2(ImageProcessor ip) {
