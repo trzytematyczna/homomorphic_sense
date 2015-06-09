@@ -303,6 +303,10 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 //
 //		if (sum(cont)>1)
 //		K=find(z<1.5);
+//		M(K)=besseli(1,z(K))./besseli(0,z(K));
+//		end
+//		K=find(z==0);
+//		M(K)=0;
 		ImageProcessor K = null;
 		if(sum(cont)>1){
 			K = find(z, 1.5, LT);			
@@ -312,10 +316,6 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 		M = applyfromfind(M, K,0.0);
 		
-//		M(K)=besseli(1,z(K))./besseli(0,z(K));
-//		end
-//		K=find(z==0);
-//		M(K)=0;
 		return M;
 	}
 
