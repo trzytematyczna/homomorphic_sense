@@ -104,7 +104,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		ImageProcessor M1;
 		
 		
-		Sigma_n = lpf(Sigma_n,lpfSNR);
+		Sigma_n = lpf(Sigma_n, (float)lpfSNR);
 		
 		M1 = filter2b(createImage(5, 5, 0.25), In);
 		
@@ -137,7 +137,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 					
 			ImageProcessor lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
 			lRn.log();
-			LPF2 = lpf(lRn,LPF);
+			LPF2 = lpf(lRn, (float)LPF);
 			Fc1 = correct_rice_gauss(SNR);
 			LPF1 = substract(LPF2,Fc1);
 			LPF1 = lpf(LPF1, (float)lpfRice, 2);
@@ -154,7 +154,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			Rn = absdiff(In, M1);
 			lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
 			lRn.log();
-			LPF2 = lpf(lRn,LPF);
+			LPF2 = lpf(lRn,(float)LPF);
 			LPF2.exp();
 			ImageProcessor Mapa2 = LPF2;
 			MapaG = multiply(Mapa2, 2);
@@ -231,9 +231,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return output;
 	}
 
-	public static ImageProcessor lpf(ImageProcessor sigma_n, double d) {
-		// TODO Auto-generated method stub
-		return null;
+	public static ImageProcessor lpf(ImageProcessor I, float sigma) {
+		return lpf(I, sigma, 2);
 	}
 
 	public static ImageProcessor lpf(ImageProcessor I, float sigma, int MODO) {
