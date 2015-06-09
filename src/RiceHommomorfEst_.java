@@ -1,81 +1,95 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
-
 import ij.*;
-import ij.gui.NewImage;
 import ij.measure.ResultsTable;
 import ij.plugin.TextReader;
 import ij.plugin.filter.PlugInFilter;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
-import ij.process.FloatProcessor;
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_1D;
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_2D;
 import edu.emory.mathcs.jtransforms.fft.*;
 
+import java.util.Properties;
+
 public class RiceHommomorfEst_ implements PlugInFilter {
 
-	static int ex_filter_type = 1;     //# 1 - local mean, 
-//            # 2 - expectation-maximization (EM).
-	static int ex_window_size =5; //# window size for E{X},
-	static int ex_iterations= 10;  //   # number of iterations of the EM algorithm (used only by EM),
-	static double lpf_f = 3.4;    //        # sigma for LPF filter,
-	static double lpf_f_SNR = 1.2;  //      # sigma for LPF filter; used to smooth sigma(x) in SNR,
-	static double lpf_f_Rice= 5.4;       //# sigma for LPF filter; used to smooth Rician corrected noise map,
-	static String input_filename = "MR_noisy.csv";                    //# Noisy MR image,
-	static String input_filenameSNR = "MR_SNR.csv";  //                  # Noisy MR image,
-	static String output_filename_Gaussian = "MR_Gaussian_Map.csv";   //# estimated noise map for Gaussian case,
-	static String output_filename_Rician = "MR_Rician_Map.csv"  ;//    # estimated noise map for Rician case,
+	static int ex_filter_type; //# 1 - local mean, # 2 - expectation-maximization (EM).
+	static int ex_window_size; //# window size for E{X},
+	static int ex_iterations;  //   # number of iterations of the EM algorithm (used only by EM),
+	static double lpf_f;    //        # sigma for LPF filter,
+	static double lpf_f_SNR;  //      # sigma for LPF filter; used to smooth sigma(x) in SNR,
+	static double lpf_f_Rice;       //# sigma for LPF filter; used to smooth Rician corrected noise map,
+	static String input_filename; //# Noisy MR image,
+	static String input_filenameSNR; //                  # Noisy MR image,
+	static String output_filename_Gaussian; //# estimated noise map for Gaussian case,
+	static String output_filename_Rician; //    # estimated noise map for Rician case,
 	
-	
-	static int LT =1;
-	static int	GT= 2;
-	static int	EQ =3;
-	static int	LOE = 4;
-	static int	GOE =5;
-	static int	NEQ =6;
+	//operatory porownan
+	static int LT =1; //<
+	static int	GT= 2; //>
+	static int	EQ =3; //==
+	static int	LOE = 4; // <=
+	static int	GOE =5; // >=
+	static int	NEQ =6; //!=
 	
 	@Override
 	public void run(ImageProcessor arg0) {
 		TextReader textReader = new TextReader();
 		ImageProcessor mriIp = textReader.open("res/MR_noisy.csv");
 		ImageProcessor snrIp = textReader.open("res/MR_SNR.csv");
-		ImageProcessor[] res = rice_hommomorf_est(mriIp, snrIp, RiceHommomorfEst_.lpf_f, ex_filter_type,??, ex_window_size);
+		
+		ImageProcessor[] res = rice_hommomorf_est(mriIp, snrIp, lpf_f,lpf_f_SNR, lpf_f_Rice, 
+				ex_filter_type,ex_window_size, ex_iterations);
+		
 		ResultsTable rician =  ResultsTable.createTableFromImage(res[0]);
 		ResultsTable gauss =  ResultsTable.createTableFromImage(res[1]);
-		rician.saveAs(output_filename_Rician);
-		gauss.saveAs(output_filename_Gaussian);
+		
+		try {
+			rician.saveAs(output_filename_Rician);
+			gauss.saveAs(output_filename_Gaussian);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public int setup(String arg0, ImagePlus arg1) {
-		// TODO Auto-generated method stub
-		
-		BufferedReader br = null;
 		try {
- 
-			String sCurrentLine;
-			br = new BufferedReader(new FileReader("C:\\testing.txt"));
-			while ((sCurrentLine = br.readLine()) != null) {
-				System.out.println(sCurrentLine);
-			}
+			File file = new File("res/properties");
+			FileInputStream fileInput = new FileInputStream(file);
+			Properties properties = new Properties();
+			properties.load(fileInput);
+			fileInput.close();
+			ex_filter_type = Integer.parseInt(properties.getProperty("ex_filter_type"));
+			ex_window_size = Integer.parseInt(properties.getProperty("ex_window_size"));
+			ex_iterations = Integer.parseInt(properties.getProperty("ex_iterations"));
+			lpf_f = Double.parseDouble(properties.getProperty("lpf_f"));
+			lpf_f_SNR = Double.parseDouble(properties.getProperty("lpf_f_SNR"));
+			lpf_f_Rice = Double.parseDouble(properties.getProperty("lpf_f_Rice"));
+			input_filename = properties.getProperty("input_filename");
+			input_filenameSNR = properties.getProperty("input_filenameSNR");
+			output_filename_Gaussian = properties.getProperty("output_filename_Gaussian");
+			output_filename_Rician = properties.getProperty("output_filename_Rician");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				if (br != null)br.close();
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
 		}
 		
 		return  DOES_ALL+NO_IMAGE_REQUIRED;
 	}
 	
-	public static ImageProcessor[] rice_hommomorf_est(ImageProcessor In, ImageProcessor SNR, double LPF, int Modo, int noiseType, int winsize) {
+
+//	lpfSNR dla lpf(sigma_n, ...)
+//	lpf dla wywolywania gauss + rician
+// 	lpfRice do uzycia przy lpf() po correct_rice_gauss
+	
+	public static ImageProcessor[] rice_hommomorf_est(ImageProcessor In, ImageProcessor SNR, 
+			double LPF, double lpfSNR, double lpfRice, int Modo,int winsize, int iteration_no) {
 		
 		ImageProcessor[] result = new FloatProcessor[2];
 		
@@ -84,13 +98,13 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 		int[] Ws = {winsize, winsize};
 		
-		ImageProcessor [] em_ml = em_ml_rice2D(In, 10, Ws);
+		ImageProcessor [] em_ml = em_ml_rice2D(In, iteration_no, Ws);
 		ImageProcessor M2 = em_ml[0];
 		ImageProcessor Sigma_n = em_ml[1];
 		ImageProcessor M1;
 		
 		
-		Sigma_n = lpf(Sigma_n,1.2);
+		Sigma_n = lpf(Sigma_n,lpfSNR);
 		
 		M1 = filter2b(createImage(5, 5, 0.25), In);
 		
@@ -126,7 +140,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			LPF2 = lpf(lRn,LPF);
 			Fc1 = correct_rice_gauss(SNR);
 			LPF1 = substract(LPF2,Fc1);
-			LPF1 = lpf(LPF1, LPF+2,2);
+			LPF1 = lpf(LPF1, lpfRice,2);
 			LPF1.exp();
 			ImageProcessor Mapa1 = LPF1;
 
@@ -175,8 +189,6 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	private static ImageProcessor filter2b(ImageProcessor h, ImageProcessor I) {
 		int Mx = h.getHeight();
 		int My = h.getWidth();
-//		System.out.println(Mx);
-//		System.out.println(My);
 		
 		if(Mx % 2 == 0 || My % 2 == 0){
 			System.err.println("filter2b size of h must be odd");
@@ -269,8 +281,6 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 
 	private static ImageProcessor approxI1_I0(ImageProcessor z) {
-		//TODO: finish
-
 //		cont=(z<1.5);
 		ImageProcessor cont = compare(z, 1.5, RiceHommomorfEst_.LOE);
 //		z8=8.*z;
@@ -290,6 +300,10 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 //
 //		if (sum(cont)>1)
 //		K=find(z<1.5);
+//		M(K)=besseli(1,z(K))./besseli(0,z(K));
+//		end
+//		K=find(z==0);
+//		M(K)=0;
 		ImageProcessor K = null;
 		if(sum(cont)>1){
 			K = find(z, 1.5, LT);			
@@ -299,10 +313,6 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 		M = applyfromfind(M, K,0.0);
 		
-//		M(K)=besseli(1,z(K))./besseli(0,z(K));
-//		end
-//		K=find(z==0);
-//		M(K)=0;
 		return M;
 	}
 
@@ -610,19 +620,12 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 
-	private static ImageProcessor filter2(ImageProcessor mask, ImageProcessor mat) {
-		///TODO:!!!!
-		
-		ImageProcessor kernel= flip(mask);
-		ImageProcessor out = new FloatProcessor(Convolution.convolute(mat, kernel));
-		return out;
+	static ImageProcessor filter2(ImageProcessor mask, ImageProcessor mat) {
+		mat.convolve((float [])mat.getPixels(), mask.getWidth(), mask.getHeight());
+		mat = multiply(mat, sum(mask));
+		return mat;
 	}
 	
-	
-	private static ImageProcessor flip(ImageProcessor mask) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	private static ImageProcessor add(ImageProcessor mat1, ImageProcessor mat2) { //done
 		float[][] outf = new float[mat1.getWidth()][mat1.getHeight()];
