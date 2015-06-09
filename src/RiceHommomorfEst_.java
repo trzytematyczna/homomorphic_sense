@@ -107,7 +107,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		ImageProcessor M1;
 		
 		
-		Sigma_n = lpf(Sigma_n,lpfSNR);
+		Sigma_n = lpf(Sigma_n, (float)lpfSNR);
 		
 		M1 = filter2b(createImage(5, 5, 0.25), In);
 		
@@ -140,10 +140,10 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 					
 			ImageProcessor lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
 			lRn.log();
-			LPF2 = lpf(lRn,LPF);
+			LPF2 = lpf(lRn, (float)LPF);
 			Fc1 = correct_rice_gauss(SNR);
 			LPF1 = substract(LPF2,Fc1);
-			LPF1 = lpf(LPF1, lpfRice,2);
+			LPF1 = lpf(LPF1, (float)lpfRice, 2);
 			LPF1.exp();
 			ImageProcessor Mapa1 = LPF1;
 
@@ -157,7 +157,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			Rn = absdiff(In, M1);
 			lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
 			lRn.log();
-			LPF2 = lpf(lRn,LPF);
+			LPF2 = lpf(lRn,(float)LPF);
 			LPF2.exp();
 			ImageProcessor Mapa2 = LPF2;
 			MapaG = multiply(Mapa2, 2);
@@ -171,7 +171,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return result;
 	}
 
-	private static ImageProcessor correct_rice_gauss(ImageProcessor SNR) {
+	public static ImageProcessor correct_rice_gauss(ImageProcessor SNR) {
 		//Fc=Coefs(1)+Coefs(2).*a1+Coefs(3).*a1.^2+Coefs(4).*a1.^3+Coefs(5).*a1.^4+Coefs(6).*a1.^5+Coefs(7).*a1.^6+Coefs(8).*a1.^7+Coefs(9).*a1.^8;
 		//Fc=Fc.*(a1<=7);       
 
@@ -189,7 +189,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return Fc;
 	}
 
-	private static ImageProcessor filter2b(ImageProcessor h, ImageProcessor I) {
+	public static ImageProcessor filter2b(ImageProcessor h, ImageProcessor I) {
 		int Mx = h.getHeight();
 		int My = h.getWidth();
 		
@@ -209,7 +209,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 	}
 
-	private static ImageProcessor submatrix(ImageProcessor mat, int beginW, int endW,int beginH, int endH) {
+	public static ImageProcessor submatrix(ImageProcessor mat, int beginW, int endW,int beginH, int endH) {
 		float[][] outf = new float[endW-beginW + 1][endH-beginH + 1];
 		for (int i = 0; i < endW-beginW + 1; i++) {
 			for (int j = 0; j < endH-beginH + 1; j++) {
@@ -220,7 +220,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return out;
 	}
 
-	private static ImageProcessor padarray(ImageProcessor in, int nx, int ny) { //chyba done
+	public static ImageProcessor padarray(ImageProcessor in, int nx, int ny) { //chyba done
 		int rows = in.getHeight() + nx * in.getHeight();
 		int cols = in.getWidth() + ny * in.getWidth();
 		float[][] outf = new float[rows][cols];
@@ -234,22 +234,20 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return output;
 	}
 
-	private static ImageProcessor lpf(ImageProcessor sigma_n, double d) {
-		// TODO Auto-generated method stub
-		return null;
+	public static ImageProcessor lpf(ImageProcessor I, float sigma) {
+		return lpf(I, sigma, 2);
 	}
 
-	private static ImageProcessor lpf(ImageProcessor I, double sigma, int MODO) {
+	public static ImageProcessor lpf(ImageProcessor I, float sigma, int MODO) {
 
 		if (MODO == 1) {
 			int Mx = I.getHeight();
 			int My = I.getWidth();
-			ImageProcessor h = null;//Imgproc.getGaussianKernel(I.getHeight() , sigma, CvType.CV_64F); TODO
+			ImageProcessor h = fspecial(I.getWidth(), I.getHeight() , sigma);
 			
-			h = divide(h, max(h));
 			if (Mx == 1 ||My == 1) {
 				ImageProcessor lRnF = fftshift(fft(I));
-				ImageProcessor lRnF2 = multiply(lRnF, h);
+				ImageProcessor lRnF2 = multiply(lRnF, h); //TODO complex multipy dimentions
 				ImageProcessor If = ifft(fftshift(lRnF2));
 				return If;
 			}
@@ -263,13 +261,12 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		else if (MODO == 2) {
 			int Mx = I.getHeight();
 			int My = I.getWidth();
-			ImageProcessor h = null;//Imgproc.getGaussianKernel(I.getHeight() * 2 , sigma * 2, CvType.CV_64F); //TODO
-			h = divide(h, max(h));
+			ImageProcessor h = fspecial(My * 2, Mx * 2 , sigma * 2);
 			h = submatrix(h, Mx + 1, h.getHeight() - 1, My + 1, h.getWidth() - 1);
 			
 			if (Mx == 1 ||My == 1) {
 				ImageProcessor lRnF = fftshift(dct(I));
-				ImageProcessor lRnF2 = multiply(lRnF, h);
+				ImageProcessor lRnF2 = multiply(lRnF, h); //TODO complex multipy dimentions
 				ImageProcessor If = idct(fftshift(lRnF2));
 				return If;
 			}
@@ -283,7 +280,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return null;
 	}
 
-	private static ImageProcessor approxI1_I0(ImageProcessor z) {
+	public static ImageProcessor approxI1_I0(ImageProcessor z) {
 //		cont=(z<1.5);
 		ImageProcessor cont = compare(z, 1.5, RiceHommomorfEst_.LOE);
 //		z8=8.*z;
@@ -319,7 +316,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return M;
 	}
 
-	private static ImageProcessor besseli(int besval, ImageProcessor mat) {
+	public static ImageProcessor besseli(int besval, ImageProcessor mat) {
 		float[][] outf = new float[mat.getWidth()][mat.getHeight()]; 
 		if(besval == 0){
 			for(int i=0; i<mat.getWidth();i++){
@@ -338,7 +335,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return new FloatProcessor(outf);
 	}
 
-	private static ImageProcessor valuesfromfind(ImageProcessor z, ImageProcessor k) {
+	public static ImageProcessor valuesfromfind(ImageProcessor z, ImageProcessor k) {
 		float[][] outf = new float[1][k.getHeight()];
 		int linear_index = 1;
 		int iterator = 0;
@@ -355,7 +352,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return new FloatProcessor(outf);
 	}
 
-	private static ImageProcessor applyfromfind(ImageProcessor mat,ImageProcessor k, ImageProcessor z) {
+	public static ImageProcessor applyfromfind(ImageProcessor mat,ImageProcessor k, ImageProcessor z) {
 		int linear_index = 1;
 		int iterator = 0;
 		
@@ -375,7 +372,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return new FloatProcessor(outf);
 	}
 	
-	private static ImageProcessor applyfromfind(ImageProcessor mat,ImageProcessor k, double val) {
+	public static ImageProcessor applyfromfind(ImageProcessor mat,ImageProcessor k, double val) {
 		int linear_index = 1;
 		int iterator = 0;
 		
@@ -395,7 +392,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return new FloatProcessor(outf);
 	}
 
-	private static ImageProcessor find(ImageProcessor mat, double value, int cmpop) {
+	public static ImageProcessor find(ImageProcessor mat, double value, int cmpop) {
 		int linear_index = 1;
 		int iterator = 0;
 		int[] temp = new int[mat.getWidth()*mat.getHeight()];
@@ -439,7 +436,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return new FloatProcessor(outf);
 	}
 
-	private static double sum(ImageProcessor mat1) {
+	public static double sum(ImageProcessor mat1) {
 		double res = 0.0;
 		for(int i=0; i<mat1.getWidth();i++){
 			for(int j=0; j<mat1.getHeight();j++){
@@ -481,7 +478,28 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return result;
 	}
 	
-	private static ImageProcessor idct2(ImageProcessor ip) {
+	public static ImageProcessor fspecial(int width, int height, float sigma) {
+		float[][] kernelMatrix = new float[height][width];
+		int x0 = width / 2;
+		int y0 = width / 2;
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				kernelMatrix[y][x] = (float) Math.exp(-(((x-x0)*(x-x0))/(2*sigma*sigma) + ((y-y0)*(y-y0))/(2*sigma*sigma)));
+			}
+		}
+		int kernelLength = height * width;
+		float[] kernel = new float[kernelLength];
+		int i = 0;
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < height; x++) {
+				kernel[i++] = kernelMatrix[y][x];
+			}
+		}
+		ImageProcessor kernelIP = new FloatProcessor(width, height, kernel);
+		return kernelIP;
+	}
+	
+	public static ImageProcessor idct2(ImageProcessor ip) {
 		float[] pixelsCopy = (float[]) ip.getPixelsCopy();
 		FloatDCT_2D dct2d = new FloatDCT_2D(ip.getHeight(), ip.getWidth());
 		dct2d.inverse(pixelsCopy, true);
@@ -489,7 +507,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return dct2out;
 	}
 
-	private static ImageProcessor dct2(ImageProcessor ip) {
+	public static ImageProcessor dct2(ImageProcessor ip) {
 		float[] pixelsCopy = (float[]) ip.getPixelsCopy();
 		FloatDCT_2D dct2d = new FloatDCT_2D(ip.getHeight(), ip.getWidth());
 		dct2d.forward(pixelsCopy, true);
@@ -497,7 +515,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return dct2out;
 	}
 
-	private static ImageProcessor idct(ImageProcessor ip) {
+	public static ImageProcessor idct(ImageProcessor ip) {
 		float[] pixelsCopy = (float[]) ip.getPixelsCopy();
 		FloatDCT_1D dct1d = new FloatDCT_1D(ip.getWidth());
 		dct1d.inverse(pixelsCopy, true);
@@ -505,7 +523,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return dct2out;
 	}
 
-	private static ImageProcessor dct(ImageProcessor ip) {
+	public static ImageProcessor dct(ImageProcessor ip) {
 		float[] pixelsCopy = (float[]) ip.getPixelsCopy();
 		FloatDCT_1D dct1d = new FloatDCT_1D(ip.getWidth());
 		dct1d.forward(pixelsCopy, true);
@@ -513,7 +531,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return dct2out;
 	}
 	
-	private static ImageProcessor fftshift(ImageProcessor mat) {
+	public static ImageProcessor fftshift(ImageProcessor mat) {
 						
 		float[][] shift = new float[mat.getWidth()][mat.getHeight()];
 		float[][] pixelsCopy = mat.getFloatArray();
@@ -532,7 +550,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 	}
 	
-	private static ImageProcessor fft(ImageProcessor ip) {
+	public static ImageProcessor fft(ImageProcessor ip) {
 		float[] pixelsAndZeros = new float[ip.getWidth() * 2];
 		float[] pixels = (float[])ip.getPixels();
 		for (int i = 0; i < ip.getWidth(); i++) {
@@ -547,7 +565,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return fftout;
 	}
 	
-	private static ImageProcessor ifft(ImageProcessor ip) {
+	public static ImageProcessor ifft(ImageProcessor ip) {
 		float[] pixelsCopy = (float[])ip.getPixelsCopy();
 		FloatFFT_1D fft1d = new FloatFFT_1D(ip.getWidth() / 2);
 		fft1d.complexInverse(pixelsCopy, true);
@@ -559,7 +577,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return ifftout;
 	}
 	
-	private static ImageProcessor fft2(ImageProcessor ip) {
+	public static ImageProcessor fft2(ImageProcessor ip) {
 		float[] pixelsAndZeros = new float[ip.getHeight() * ip.getWidth() * 2];
 		float[] pixels = (float[])ip.getPixels();
 		for (int i = 0; i < ip.getHeight() * ip.getWidth(); i++) {
@@ -574,7 +592,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return fftout;
 	}
 	
-	private static ImageProcessor ifft2(ImageProcessor ip) {
+	public static ImageProcessor ifft2(ImageProcessor ip) {
 		float[] pixelsCopy = (float[])ip.getPixelsCopy();
 		FloatFFT_2D fft2d = new FloatFFT_2D(ip.getHeight(), ip.getWidth() / 2);
 		fft2d.complexInverse(pixelsCopy, true);
@@ -586,7 +604,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return ifftout;
 	}
 	
-	private static ImageProcessor createImage(int width, int height, double fill) {
+	public static ImageProcessor createImage(int width, int height, double fill) {
 		float[][] data = new float[width][height];
 		for (int i = 0; i < width; i++) {
 			for (int j = 0; j < height; j++) {
@@ -597,7 +615,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return ip;
 	}
 	
-	private static ImageProcessor absdiff(ImageProcessor mat1, ImageProcessor mat2) {
+	public static ImageProcessor absdiff(ImageProcessor mat1, ImageProcessor mat2) {
 		return abs(substract(mat1, mat2));
 	}
 	
@@ -609,7 +627,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 
-	private static ImageProcessor add(ImageProcessor mat1, ImageProcessor mat2) { //done
+	public static ImageProcessor add(ImageProcessor mat1, ImageProcessor mat2) { //done
 		float[][] outf = new float[mat1.getWidth()][mat1.getHeight()];
 		for(int i=0; i<mat1.getWidth();i++){
 			for(int j=0; j<mat1.getHeight();j++){
@@ -620,17 +638,17 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return out;
 	}
 	
-	private static ImageProcessor add(ImageProcessor mat, double value) {//done
+	public static ImageProcessor add(ImageProcessor mat, double value) {//done
 		mat.add(value);
 		return mat;
 	}
 	
-	private static ImageProcessor abs(ImageProcessor mat) {//done
+	public static ImageProcessor abs(ImageProcessor mat) {//done
 		mat.abs();
 		return mat;
 	}
 	
-	private static ImageProcessor substract(ImageProcessor mat1, ImageProcessor mat2) { //done
+	public static ImageProcessor substract(ImageProcessor mat1, ImageProcessor mat2) { //done
 		float[][] outf = new float[mat1.getWidth()][mat1.getHeight()];
 		for(int i=0; i<mat1.getWidth();i++){
 			for(int j=0; j<mat1.getHeight();j++){
@@ -641,24 +659,24 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return out;
 	}
 	
-	private static ImageProcessor substract(double value, ImageProcessor mat) {//done
+	public static ImageProcessor substract(double value, ImageProcessor mat) {//done
 		ImageProcessor newip = substract(createImage(mat.getWidth(),mat.getHeight(), value), mat);
 		return newip ;
 	}
 	
-	private static ImageProcessor sqrt(ImageProcessor mat) {//done
+	public static ImageProcessor sqrt(ImageProcessor mat) {//done
 		mat.sqrt();
 		return mat;
 	}
 	
-	private static ImageProcessor pow(ImageProcessor mat, double power) {//done
+	public static ImageProcessor pow(ImageProcessor mat, double power) {//done
 		for(int i=0; i<power; i++){
 			mat = multiply(mat, mat);			
 		}
 		return mat;
 	}
 	
-	private static double max(ImageProcessor mat) { //done
+	public static double max(ImageProcessor mat) { //done
 		float max = Integer.MIN_VALUE;
 		for(int i=0; i<mat.getWidth();i++){
 			for(int j=0; j<mat.getHeight();j++){
@@ -671,7 +689,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return max;
 	}
 	
-	private static ImageProcessor max(ImageProcessor mat, double d) { //chyba done
+	public static ImageProcessor max(ImageProcessor mat, double d) { //chyba done
 		float[][] outf = new float[mat.getWidth()][mat.getHeight()];
 		for(int i=0; i<mat.getWidth();i++){
 			for(int j=0; j<mat.getHeight();j++){
@@ -688,7 +706,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return newip;
 	}
 	
-	private static double min(ImageProcessor mat) { //done
+	public static double min(ImageProcessor mat) { //done
 		float min = Integer.MAX_VALUE;
 		for(int i=0; i<mat.getWidth();i++){
 			for(int j=0; j<mat.getHeight();j++){
@@ -701,17 +719,17 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return min;
 	}
 	
-	private static ImageProcessor divide(ImageProcessor mat, double value) {	//done
+	public static ImageProcessor divide(ImageProcessor mat, double value) {	//done
 		mat.multiply(1/value);
 		return mat;
 	}
 	
-	private static ImageProcessor divide(double value, ImageProcessor mat) {	//done
+	public static ImageProcessor divide(double value, ImageProcessor mat) {	//done
 		ImageProcessor newip = divide(createImage(mat.getWidth(),mat.getHeight(), value), mat);
 		return newip ;
 	}
 	
-	private static ImageProcessor divide(ImageProcessor mat1, ImageProcessor mat2) {	//done
+	public static ImageProcessor divide(ImageProcessor mat1, ImageProcessor mat2) {	//done
 		float[][] outf = new float[mat1.getWidth()][mat1.getHeight()];
 		for(int i=0; i<mat1.getWidth();i++){
 			for(int j=0; j<mat1.getHeight();j++){
@@ -722,7 +740,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return out;
 	}
 	
-	private static ImageProcessor compare(ImageProcessor mat, double value, int cmpop) { //done
+	public static ImageProcessor compare(ImageProcessor mat, double value, int cmpop) { //done
 		float[][] outf = new float[mat.getWidth()][mat.getHeight()];
 		for(int i=0; i<mat.getWidth();i++){
 			for(int j=0; j<mat.getHeight();j++){
@@ -777,11 +795,11 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		return out;
 	}
 	
-	private static ImageProcessor multiply(ImageProcessor mat, double value) {	//done
+	public static ImageProcessor multiply(ImageProcessor mat, double value) {	//done
 		mat.multiply(value);
 		return mat;
 	}
-	private static ImageProcessor multiply(ImageProcessor mat1, ImageProcessor mat2) {	//done
+	public static ImageProcessor multiply(ImageProcessor mat1, ImageProcessor mat2) {	//done
 		float[][] outf = new float[mat1.getWidth()][mat1.getHeight()];
 		for(int i=0; i<mat1.getWidth();i++){
 			for(int j=0; j<mat1.getHeight();j++){
