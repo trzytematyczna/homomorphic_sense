@@ -8,6 +8,7 @@ import sun.security.krb5.internal.PAData;
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_1D;
 import edu.emory.mathcs.jtransforms.dct.FloatDCT_2D;
 import ij.ImagePlus;
+import ij.gui.GenericDialog;
 import ij.io.FileSaver;
 import ij.io.OpenDialog;
 import ij.measure.ResultsTable;
@@ -29,6 +30,7 @@ public class Main {
 		rhe.run(null);
 		
 		System.out.println("END");
+		
 		return;
 		
 	}
