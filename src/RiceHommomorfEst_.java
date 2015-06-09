@@ -243,10 +243,9 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			int My = I.getWidth();
 			ImageProcessor h = fspecial(I.getWidth(), I.getHeight() , sigma);
 			
-			h = divide(h, max(h));
 			if (Mx == 1 ||My == 1) {
 				ImageProcessor lRnF = fftshift(fft(I));
-				ImageProcessor lRnF2 = multiply(lRnF, h);
+				ImageProcessor lRnF2 = multiply(lRnF, h); //TODO complex multipy dimentions
 				ImageProcessor If = ifft(fftshift(lRnF2));
 				return If;
 			}
@@ -260,13 +259,12 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		else if (MODO == 2) {
 			int Mx = I.getHeight();
 			int My = I.getWidth();
-			ImageProcessor h = null;//Imgproc.getGaussianKernel(I.getHeight() * 2 , sigma * 2, CvType.CV_64F); //TODO
-			h = divide(h, max(h));
+			ImageProcessor h = fspecial(My * 2, Mx * 2 , sigma * 2);
 			h = submatrix(h, Mx + 1, h.getHeight() - 1, My + 1, h.getWidth() - 1);
 			
 			if (Mx == 1 ||My == 1) {
 				ImageProcessor lRnF = fftshift(dct(I));
-				ImageProcessor lRnF2 = multiply(lRnF, h);
+				ImageProcessor lRnF2 = multiply(lRnF, h); //TODO complex multipy dimentions
 				ImageProcessor If = idct(fftshift(lRnF2));
 				return If;
 			}
@@ -496,7 +494,6 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			}
 		}
 		ImageProcessor kernelIP = new FloatProcessor(width, height, kernel);
-		kernelIP = divide(kernelIP, sum(kernelIP));
 		return kernelIP;
 	}
 	
