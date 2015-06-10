@@ -177,12 +177,12 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 				LocalMean = M2;
 			}
 			else{
-				LocalMean = createImage(In.getWidth(), In.getHeight(), 0);
+				LocalMean = createImage(In.getWidth(), In.getHeight(), 0.0);
 			}
 			
 			Rn = absdiff(In, LocalMean);
 				
-			ImageProcessor lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
+			ImageProcessor lRn = add(multiply(Rn, compare(Rn, 0.0, NEQ)), multiply(compare(Rn, 0.0, EQ),0.001));
 			lRn.log();
 			LPF2 = lpf(lRn, (float)LPF);
 			System.out.println("correct_rice_gauss...");
@@ -193,7 +193,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			ImageProcessor Mapa1 = LPF1;
 
 //			MapaR=Mapa1.*2./sqrt(2).*exp(-psi(1)./2);
-			MapaR = multiply(divide(multiply(Mapa1, 2), Math.sqrt(2.0)), exp_psi_div2);
+			MapaR = multiply(divide(multiply(Mapa1, 2.0), Math.sqrt(2.0)), exp_psi_div2);
 //		}
 		
 			//GAUSSIAN!!
@@ -201,13 +201,13 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			System.out.println("GAUSSIAN...");
 			Rn = absdiff(In, M1);
 //			lRn=log(Rn.*(Rn~=0)+0.001.*(Rn==0));
-			lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
+			lRn = add(multiply(Rn, compare(Rn, 0.0, NEQ)), multiply(compare(Rn, 0.0, EQ),0.001));
 			lRn.log();
 			LPF2 = lpf(lRn,(float)LPF);
 			LPF2.exp();
 			ImageProcessor Mapa2 = LPF2;
 //			MapaG=Mapa2.*2./sqrt(2).*exp(-psi(1)./2);
-			MapaG = multiply(divide(multiply(Mapa2, 2), Math.sqrt(2.0)), exp_psi_div2);
+			MapaG = multiply(divide(multiply(Mapa2, 2.0), Math.sqrt(2.0)), exp_psi_div2);
 			
 //		}
 		result[0] = MapaR;
@@ -337,13 +337,13 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 //		cont=(z<1.5);
 		ImageProcessor cont = compare(z, 1.5, LT);
 //		z8=8.*z;
-		ImageProcessor z8 = multiply(z, 8);
+		ImageProcessor z8 = multiply(z, 8.0);
 
 //		Mn=1-3./z8-15./2./(z8).^2-(3*5*21)./6./(z8).^3;
-		ImageProcessor Mn = substract(substract(substract(1, divide(3, z8)), divide(15/2, pow(z8, 2))), divide((3*5*21)/6, pow(z8, 3)));
+		ImageProcessor Mn = substract(substract(substract(1.0, divide(3.0, z8)), divide(15.0/2.0, pow(z8, 2.0))), divide((3.0*5.0*21.0)/6.0, pow(z8, 3.0)));
 		
 //		Md=1+1./z8+9./2./(z8).^2+(25*9)./6./(z8).^3;
-		ImageProcessor Md = add(add(add(divide(1, z8), 1), divide(9/2, pow(z8,2))), divide((25*9)/6, pow(z8, 3)));
+		ImageProcessor Md = add(add(add(divide(1.0, z8), 1.0), divide(9.0/2.0, pow(z8,2.0))), divide((25.0*9.0)/6.0, pow(z8, 3.0)));
 		
 //		M=Mn./Md;
 		ImageProcessor M = divide(Mn, Md);
@@ -362,7 +362,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			K = find(z, 1.5, LT);			
 			M = applyfromfind(M, K, divide(besseli(1, valuesfromfind(z,K)), besseli(0, valuesfromfind(z,K))));
 		}
-		K = find(z,0, EQ);
+		K = find(z,0.0, EQ);
 		
 		M = applyfromfind(M, K,0.0);
 		
@@ -454,27 +454,27 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		for(int i=0; i<mat.getWidth();i++){
 			for(int j=0; j<mat.getHeight();j++){
 				switch (cmpop) {
-		            case 1:  if (mat.getPixelValue(i, j) < value){//		int LT =1;
+		            case 1:  if (mat.getPixelValue(i, j) < (float) value){//		int LT =1;
 		            			temp[iterator++]=linear_index;
 		            		 }
 		            		 break;
-		            case 2:  if (mat.getPixelValue(i, j) > value){//		int	GT= 2;
+		            case 2:  if (mat.getPixelValue(i, j) > (float) value){//		int	GT= 2;
 		            			temp[iterator++]=linear_index;
 		            		 }
 		            		 break;
-		            case 3:  if (mat.getPixelValue(i, j) == value){//		int	EQ =3;
+		            case 3:  if (mat.getPixelValue(i, j) == (float) value){//		int	EQ =3;
 		            			temp[iterator++]=linear_index;
 		            		 }
 		            		 break;
-		            case 4:  if (mat.getPixelValue(i, j) <= value){//		int	LOE = 4;
+		            case 4:  if (mat.getPixelValue(i, j) <= (float) value){//		int	LOE = 4;
 		            			temp[iterator++]=linear_index;
 		            		 }
 		            		 break;
-		            case 5:  if (mat.getPixelValue(i, j) >= value){//		int	GOE =5;
+		            case 5:  if (mat.getPixelValue(i, j) >= (float) value){//		int	GOE =5;
 		            			temp[iterator++]=linear_index;
 		            		 }
 		            		 break;
-					case 6:  if (mat.getPixelValue(i, j) != value){//		int	NEQ =6;
+					case 6:  if (mat.getPixelValue(i, j) != (float) value){//		int	NEQ =6;
 								temp[iterator++]=linear_index;
 				    		 }
 				    		 break;
@@ -510,7 +510,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		ImageProcessor Mask = divide(createImage(Ws[1],Ws[0], 1.0), prod);
 		
 //		a_k=sqrt(sqrt(max(2.*filter2B(Mask,In.^2).^2-filter2B(Mask,In.^4),0)));
-		ImageProcessor a_k = sqrt(sqrt(max(substract(multiply(pow(filter2b(Mask, pow(In, 2)), 2), 2), filter2b(Mask, pow(In, 4))), 0)));
+		ImageProcessor a_k = sqrt(sqrt(max(substract(multiply(pow(filter2b(Mask, pow(In, 2)), 2), 2.0), filter2b(Mask, pow(In, 4))), 0.0)));
 		
 //		sigma_k2=0.5.*max(filter2B(Mask,In.^2)-a_k.^2,0.01);
 		ImageProcessor sigma_k2 = multiply(max(substract(filter2b(Mask, pow(In, 2)), pow(a_k, 2)), 0.01), 0.5);
@@ -521,7 +521,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			a_k = max(filter2b(Mask, multiply(approxI1_I0(divide(multiply(a_k, In), sigma_k2)), In)), 0);
 			
 //			sigma_k2=max(0.5.*filter2B(Mask,abs(In).^2)-a_k.^2./2,0.01);
-			sigma_k2 = max(substract(multiply(filter2b(Mask, pow(abs(In), 2)), 0.5), divide(pow(a_k, 2), 2)), 0.01);
+			sigma_k2 = max(substract(multiply(filter2b(Mask, pow(abs(In), 2)), 0.5), divide(pow(a_k, 2), 2.0)), 0.01);
 			
 		}
 			
@@ -539,7 +539,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		int y0 = width / 2;
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
-				kernelMatrix[y][x] = (float) Math.exp(-(((x-x0)*(x-x0))/(2*sigma*sigma) + ((y-y0)*(y-y0))/(2*sigma*sigma)));
+				kernelMatrix[y][x] = (float) Math.exp(-(((x-x0)*(x-x0))/(2.0*sigma*sigma) + ((y-y0)*(y-y0))/(2.0*sigma*sigma)));
 			}
 		}
 		int kernelLength = height * width;
@@ -612,7 +612,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			pixelsAndZeros[i] = pixels[i];
 		}
 		for (int i = ip.getWidth(); i < ip.getWidth() * 2; i++) {
-			pixelsAndZeros[i] = 0;
+			pixelsAndZeros[i] = (float) 0.0;
 		}
 		FloatFFT_1D fft1d = new FloatFFT_1D(ip.getWidth());
 		fft1d.realForwardFull(pixelsAndZeros);
@@ -639,7 +639,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			pixelsAndZeros[i] = pixels[i];
 		}
 		for (int i = ip.getHeight() * ip.getWidth(); i < ip.getHeight() * ip.getWidth() * 2; i++) {
-			pixelsAndZeros[i] = 0;
+			pixelsAndZeros[i] = (float) 0.0;
 		}
 		FloatFFT_2D fft2d = new FloatFFT_2D(ip.getHeight(), ip.getWidth());
 		fft2d.realForwardFull(pixelsAndZeros);
@@ -738,7 +738,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	public static double max(ImageProcessor mat) { //done
-		float max = Integer.MIN_VALUE;
+		float max = Float.MIN_VALUE;
 		for(int i=0; i<mat.getWidth();i++){
 			for(int j=0; j<mat.getHeight();j++){
 				float val =mat.getPixelValue(i, j);
@@ -768,7 +768,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	public static double min(ImageProcessor mat) { //done
-		float min = Integer.MAX_VALUE;
+		float min = Float.MAX_VALUE;
 		for(int i=0; i<mat.getWidth();i++){
 			for(int j=0; j<mat.getHeight();j++){
 				float val =mat.getPixelValue(i, j);
@@ -782,7 +782,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	
 	public static ImageProcessor divide(ImageProcessor mat, double value) {	//done
 		ImageProcessor matout = new FloatProcessor(mat.getFloatArray());
-		matout.multiply(1/value);
+		matout.multiply(1.0/value);
 		return matout;
 	}
 	
@@ -807,46 +807,46 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		for(int i=0; i<mat.getWidth();i++){
 			for(int j=0; j<mat.getHeight();j++){
 				switch (cmpop) {
-		            case 1:  if (mat.getPixelValue(i, j) < value){//		int LT =1;
-		            			outf[i][j] = 1;
+		            case 1:  if (mat.getPixelValue(i, j) < (float) value){//		int LT =1;
+		            			outf[i][j] = 1.0f;
 		            		 }
 		            		 else {
-		         				outf[i][j] = 0;
+		         				outf[i][j] = 0.0f;
 		            		 }
 		            		 break;
-		            case 2:  if (mat.getPixelValue(i, j) > value){//		int	GT= 2;
-		            			outf[i][j] = 1;
+		            case 2:  if (mat.getPixelValue(i, j) > (float) value){//		int	GT= 2;
+		            			outf[i][j] = 1.0f;
 		            		 }
 		            		 else {
-		         				outf[i][j] = 0;
+		         				outf[i][j] = 0.0f;
 		            		 }
 		            		 break;
-		            case 3:  if (mat.getPixelValue(i, j) == value){//		int	EQ =3;
-		            			outf[i][j] = 1;
+		            case 3:  if (mat.getPixelValue(i, j) == (float) value){//		int	EQ =3;
+		            			outf[i][j] = 1.0f;
 		            		 }
 		            		 else {
-		         				outf[i][j] = 0;
+		         				outf[i][j] = 0.0f;
 		            		 }
 		            		 break;
-		            case 4:  if (mat.getPixelValue(i, j) <= value){//		int	LOE = 4;
-		            			outf[i][j] = 1;
+		            case 4:  if (mat.getPixelValue(i, j) <= (float) value){//		int	LOE = 4;
+		            			outf[i][j] = 1.0f;
 		            		 }
 		            		 else {
-		         				outf[i][j] = 0;
+		         				outf[i][j] = 0.0f;
 		            		 }
 		            		 break;
-		            case 5:  if (mat.getPixelValue(i, j) >= value){//		int	GOE =5;
-		            			outf[i][j] = 1;
+		            case 5:  if (mat.getPixelValue(i, j) >= (float) value){//		int	GOE =5;
+		            			outf[i][j] = 1.0f;
 		            		 }
 		            		 else {
-		         				outf[i][j] = 0;
+		         				outf[i][j] = 0.0f;
 		            		 }
 		            		 break;
-					case 6:  if (mat.getPixelValue(i, j) != value){//		int	NEQ =6;
-				    			outf[i][j] = 1;
+					case 6:  if (mat.getPixelValue(i, j) != (float) value){//		int	NEQ =6;
+				    			outf[i][j] = 1.0f;
 				    		 }
 				    		 else {
-				 				outf[i][j] = 0;
+				 				outf[i][j] = 0.0f;
 				    		 }
 				    		 break;
 					}
