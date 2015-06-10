@@ -150,11 +150,11 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		ImageProcessor M2 = em_ml[0];
 		ImageProcessor Sigma_n = em_ml[1];
 		ImageProcessor M1;
-		Sigma_n = lpf(Sigma_n, (float)lpfSNR);
+		ImageProcessor Sigma_n2 = lpf(Sigma_n, (float)lpfSNR);
 		
 		M1 = filter2b(createImage(5, 5, 0.25), In);
 		
-		if(SNR.getHeight() == 1 && SNR.getHeight() == 0){
+		if(SNR == null){
 			SNR = divide(M2, Sigma_n);
 		}
 		
@@ -165,7 +165,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		ImageProcessor Fc1;
 
 		double psi = -0.5772;
-		double exp_psi_div2 = 1.3346;
+		double exp_psi_div2 = 1.334568251529384;
 
 		//RICIAN!!
 //		if(noiseType == RICIAN){
@@ -192,23 +192,22 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			LPF1.exp();
 			ImageProcessor Mapa1 = LPF1;
 
-			MapaR = multiply(Mapa1, 2);
-			MapaR.sqrt();
-			MapaR = multiply(MapaR, exp_psi_div2);
+//			MapaR=Mapa1.*2./sqrt(2).*exp(-psi(1)./2);
+			MapaR = multiply(divide(multiply(Mapa1, 2), Math.sqrt(2.0)), exp_psi_div2);
 //		}
 		
 			//GAUSSIAN!!
 //		else if (noiseType == GAUSSIAN){
 			System.out.println("GAUSSIAN...");
 			Rn = absdiff(In, M1);
+//			lRn=log(Rn.*(Rn~=0)+0.001.*(Rn==0));
 			lRn = add(multiply(Rn, compare(Rn, 0, NEQ)), multiply(compare(Rn, 0, EQ),0.001));
 			lRn.log();
 			LPF2 = lpf(lRn,(float)LPF);
 			LPF2.exp();
 			ImageProcessor Mapa2 = LPF2;
-			MapaG = multiply(Mapa2, 2);
-			MapaG.sqrt();
-			MapaG = multiply(MapaG, exp_psi_div2);
+//			MapaG=Mapa2.*2./sqrt(2).*exp(-psi(1)./2);
+			MapaG = multiply(divide(multiply(Mapa2, 2), Math.sqrt(2.0)), exp_psi_div2);
 			
 //		}
 		result[0] = MapaR;
