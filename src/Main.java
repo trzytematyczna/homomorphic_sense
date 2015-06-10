@@ -26,15 +26,18 @@ public class Main {
 		float[] a = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 //		float[] b = {1, 1, 2, 3, 4, 5, 6, 7, 8};
 		float[] b = {5, 1, 2, 6, 4, 5, 6, 3, 8};
-		float[] c = {1, 1, 2, 3, 4, 5, 6, 7, 8};
+//		float[] c = {1, 1, 2, 3, 4, 5, 6, 7, 8};
+		float[] c = {1, 1, 1, 1, 1, 1, 1, 1, 1};
 		ImageProcessor A = new FloatProcessor(3, 3, a);
+		ImageProcessor C = new FloatProcessor(3, 3, c);
 		ImageProcessor B = new FloatProcessor(3, 3, b);
 //		ImageProcessor O = RiceHommomorfEst_.filter2b(A, B);
 		ImageProcessor K = RiceHommomorfEst_.find(B, 4, RiceHommomorfEst_.GOE);
-		ImageProcessor O = RiceHommomorfEst_.applyfromfind(B, K, 0);
+//		ImageProcessor O = RiceHommomorfEst_.applyfromfind(B, K, C);
+		ImageProcessor O = RiceHommomorfEst_.valuesfromfind(C, K);
 		for (int i = 0; i < 6; i++) {
 			for (int j = 0; j < 1; j++) {
-				System.out.print("[" + K.getPixelValue(j, i) + "]");
+				System.out.print("[" + O.getPixelValue(j, i) + "]");
 			}
 			System.out.println();
 		}
@@ -56,9 +59,9 @@ public class Main {
 		
 		System.out.println("START");
 		
-		RiceHommomorfEst_ rhe = new RiceHommomorfEst_();
-		rhe.setup(null, null);
-		rhe.run(null);
+//		RiceHommomorfEst_ rhe = new RiceHommomorfEst_();
+//		rhe.setup(null, null);
+//		rhe.run(null);
 		
 		System.out.println("END");
 		
