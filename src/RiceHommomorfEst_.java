@@ -148,7 +148,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		
 		M1 = filter2b(createImage(5, 5, 0.25), In);
 		
-		if(SNR.getWidth() == 0 && SNR.getHeight() == 0){
+		if(SNR == null){
 			SNR = divide(M2, Sigma_n);
 		}
 		
