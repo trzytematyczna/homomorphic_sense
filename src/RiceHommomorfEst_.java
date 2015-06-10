@@ -408,9 +408,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		float[][] outf= new float[mat.getWidth()][mat.getHeight()];
 		for(int i=0; i<mat.getWidth();i++){
 			for(int j=0; j<mat.getHeight();j++){
-				System.out.println("kval:" +k.getPixelValue(1, iterator));
 				if(linear_index == k.getPixelValue(0, iterator)){
-//					outf[i][j] = z.getPixelValue(1, iterator);					
 					outf[i][j] = z_linear[iterator];//z.getPixelValue(1, iterator);					
 					iterator++;
 					System.out.println(iterator);

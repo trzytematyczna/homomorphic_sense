@@ -59,9 +59,9 @@ public class Main {
 		
 		System.out.println("START");
 		
-//		RiceHommomorfEst_ rhe = new RiceHommomorfEst_();
-//		rhe.setup(null, null);
-//		rhe.run(null);
+		RiceHommomorfEst_ rhe = new RiceHommomorfEst_();
+		rhe.setup(null, null);
+		rhe.run(null);
 		
 		System.out.println("END");
 		
