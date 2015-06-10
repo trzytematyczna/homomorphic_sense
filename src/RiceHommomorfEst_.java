@@ -49,7 +49,13 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		System.out.println("Reading images...");
 		TextReader textReader = new TextReader();
 		ImageProcessor mriIp = textReader.open(input_filename);
-		ImageProcessor snrIp = textReader.open(input_filenameSNR);
+		ImageProcessor snrIp;
+		if(input_filenameSNR.equalsIgnoreCase("0")){
+			snrIp = null;			
+		}
+		else{
+			snrIp = textReader.open(input_filenameSNR);
+		}
 		
 		System.out.println("rice_hommomorf_est...");
 		long start = System.currentTimeMillis();
