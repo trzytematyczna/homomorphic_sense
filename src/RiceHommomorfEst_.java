@@ -384,7 +384,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 
 	public static ImageProcessor valuesfromfind(ImageProcessor z, ImageProcessor k) {
 		float[][] outf = new float[1][k.getHeight()];
-		int linear_index = 1;
+		int linear_index = 0;
 		int iterator = 0;
 		
 		for(int i=0; i<z.getWidth();i++){
@@ -400,7 +400,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 
 	public static ImageProcessor applyfromfind(ImageProcessor mat,ImageProcessor k, ImageProcessor z) {
-		int linear_index = 1;
+		float linear_index = 0;
 		int iterator = 0;
 		
 		float[][] outf= new float[mat.getWidth()][mat.getHeight()];
@@ -409,26 +409,28 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 				if(linear_index == k.getPixelValue(1, iterator)){
 					outf[i][j] = z.getPixelValue(1, iterator);					
 					iterator++;
+					System.out.println(iterator);
 				}
 				else{
 					outf[i][j] = mat.getPixelValue(i, j);
 				}
 				linear_index++;
+				System.out.println(linear_index);
 			}
 		}
 		return new FloatProcessor(outf);
 	}
 	
 	public static ImageProcessor applyfromfind(ImageProcessor mat,ImageProcessor k, double val) {
-		int linear_index = 1;
+		float linear_index = 0;
 		int iterator = 0;
 		
 		float[][] outf= new float[mat.getWidth()][mat.getHeight()];
 		for(int i=0; i<mat.getWidth();i++){
 			for(int j=0; j<mat.getHeight();j++){
-				if(linear_index == k.getPixelValue(1, iterator)){
+				if(linear_index == k.getPixelValue(0, iterator)){
 					iterator++;
-					outf[i][j] = (float) val;					
+					outf[i][j] = (float) val;	
 				}
 				else{
 					outf[i][j] = mat.getPixelValue(i, j);
