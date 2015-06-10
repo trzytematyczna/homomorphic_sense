@@ -2,6 +2,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 
 import ij.*;
 import ij.gui.GenericDialog;
@@ -52,7 +54,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		System.out.println("rice_hommomorf_est...");
 		long start = System.currentTimeMillis();
 		ImageProcessor[] res = rice_hommomorf_est(mriIp, snrIp, lpf_f,lpf_f_SNR, lpf_f_Rice, 
-				ex_filter_type,ex_window_size, ex_iterations);
+					ex_filter_type,ex_window_size, ex_iterations);
 		long finish = System.currentTimeMillis();
 		
 		String text = "Execution time: "+(finish-start)+" ms";
@@ -128,7 +130,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 // 	lpfRice do uzycia przy lpf() po correct_rice_gauss
 	
 	public static ImageProcessor[] rice_hommomorf_est(ImageProcessor In, ImageProcessor SNR, 
-			double LPF, double lpfSNR, double lpfRice, int Modo,int winsize, int iteration_no) {
+			double LPF, double lpfSNR, double lpfRice, int Modo,int winsize, int iteration_no){
 		
 		ImageProcessor[] result = new FloatProcessor[2];
 		
@@ -142,7 +144,6 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		ImageProcessor M2 = em_ml[0];
 		ImageProcessor Sigma_n = em_ml[1];
 		ImageProcessor M1;
-		
 		ImageProcessor Sigma_n2 = lpf(Sigma_n, (float)lpfSNR);
 		
 		M1 = filter2b(createImage(5, 5, 0.25), In);
@@ -328,7 +329,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 
 	public static ImageProcessor approxI1_I0(ImageProcessor z) {
 //		cont=(z<1.5);
-		ImageProcessor cont = compare(z, 1.5, RiceHommomorfEst_.LOE);
+		ImageProcessor cont = compare(z, 1.5, LT);
 //		z8=8.*z;
 		ImageProcessor z8 = multiply(z, 8);
 
@@ -336,7 +337,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		ImageProcessor Mn = substract(substract(substract(1, divide(3, z8)), divide(15/2, pow(z8, 2))), divide((3*5*21)/6, pow(z8, 3)));
 		
 //		Md=1+1./z8+9./2./(z8).^2+(25*9)./6./(z8).^3;
-		ImageProcessor Md = add(add(add(divide(1, z8), 1), divide(9/2, z8)), divide((25*9)/6, pow(z8, 3)));
+		ImageProcessor Md = add(add(add(divide(1, z8), 1), divide(9/2, pow(z8,2))), divide((25*9)/6, pow(z8, 3)));
 		
 //		M=Mn./Md;
 		ImageProcessor M = divide(Mn, Md);
