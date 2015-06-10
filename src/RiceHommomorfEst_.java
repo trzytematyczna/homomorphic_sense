@@ -195,7 +195,11 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 //			MapaR=Mapa1.*2./sqrt(2).*exp(-psi(1)./2);
 			MapaR = multiply(divide(multiply(Mapa1, 2.0), Math.sqrt(2.0)), exp_psi_div2);
 //		}
-		
+			Rn = null;
+			lRn = null;
+			LPF2 = null;
+			LPF2 = null;
+			
 			//GAUSSIAN!!
 //		else if (noiseType == GAUSSIAN){
 			System.out.println("GAUSSIAN...");
