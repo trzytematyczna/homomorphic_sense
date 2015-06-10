@@ -2,6 +2,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
 import sun.security.krb5.internal.PAData;
@@ -69,4 +71,14 @@ public class Main {
 		
 	}
 	
+	
+	private static void printPr(ImageProcessor mat1, String name) throws FileNotFoundException, UnsupportedEncodingException{
+		PrintWriter writer = new PrintWriter(name, "UTF-8");
+		for(int i=0; i<mat1.getWidth();i++){
+			for(int j=0; j<mat1.getHeight();j++){
+				writer.print(mat1.getPixelValue(i, j)+"\t");
+			}
+			writer.print("\n");		
+		}
+	}
 }
