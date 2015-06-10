@@ -309,7 +309,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			int Mx = I.getHeight();
 			int My = I.getWidth();
 			ImageProcessor h = fspecial(My * 2, Mx * 2 , sigma * 2);
-			h = submatrix(h, Mx + 1, h.getHeight() - 1, My + 1, h.getWidth() - 1);
+			h = submatrix(h, Mx, h.getHeight() - 1, My, h.getWidth() - 1);
 			
 			if (Mx == 1 ||My == 1) {
 				ImageProcessor lRnF = fftshift(dct(I));
@@ -440,7 +440,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 
 	public static ImageProcessor find(ImageProcessor mat, double value, int cmpop) {
-		int linear_index = 1;
+		int linear_index = 0;
 		int iterator = 0;
 		int[] temp = new int[mat.getWidth()*mat.getHeight()];
 		for(int i=0; i<mat.getWidth();i++){
