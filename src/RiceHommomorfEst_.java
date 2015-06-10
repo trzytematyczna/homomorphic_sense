@@ -318,15 +318,15 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			h = submatrix(h, Mx, h.getHeight() - 1, My, h.getWidth() - 1);
 			
 			if (Mx == 1 ||My == 1) {
-				ImageProcessor lRnF = fftshift(dct(I));
+				ImageProcessor lRnF = dct(I);
 				ImageProcessor lRnF2 = multiply(lRnF, h); //TODO complex multipy dimentions
-				ImageProcessor If = idct(fftshift(lRnF2));
+				ImageProcessor If = idct(lRnF2);
 				return If;
 			}
 			else {
-				ImageProcessor lRnF = fftshift(dct2(I));
+				ImageProcessor lRnF = dct2(I);
 				ImageProcessor lRnF2 = multiply(lRnF, h);
-				ImageProcessor If = idct2(fftshift(lRnF2));
+				ImageProcessor If = idct2(lRnF2);
 				return If;
 			}
 		}
