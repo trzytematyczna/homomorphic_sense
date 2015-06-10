@@ -152,7 +152,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		ImageProcessor M1;
 		ImageProcessor Sigma_n2 = lpf(Sigma_n, (float)lpfSNR);
 		
-		M1 = filter2b(createImage(5, 5, 0.25), In);
+		M1 = filter2b(createImage(5, 5, 1.0/25.0), In);
 		
 		if(SNR == null){
 			SNR = divide(M2, Sigma_n);
@@ -782,7 +782,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	
 	public static ImageProcessor divide(ImageProcessor mat, double value) {	//done
 		ImageProcessor matout = new FloatProcessor(mat.getFloatArray());
-		matout.multiply(1/value);
+		matout.multiply((double)1/value);
 		return matout;
 	}
 	
