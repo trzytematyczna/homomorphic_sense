@@ -296,11 +296,11 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		if (MODO == 1) {
 			int Mx = I.getHeight();
 			int My = I.getWidth();
-			ImageProcessor h = fspecial(I.getWidth(), I.getHeight() , sigma);
+			ImageProcessor h = fspecial(I.getWidth() * 2, I.getHeight() , sigma);
 			
 			if (Mx == 1 ||My == 1) {
 				ImageProcessor lRnF = fftshift(fft(I));
-				ImageProcessor lRnF2 = multiply(lRnF, h); //TODO complex multipy dimentions
+				ImageProcessor lRnF2 = multiply(lRnF, h);
 				ImageProcessor If = ifft(fftshift(lRnF2));
 				return If;
 			}
@@ -401,8 +401,9 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 				}
 				linear_index++;
 			}
-		}		
-		return new FloatProcessor(outf);
+		}
+		ImageProcessor out = new FloatProcessor(outf);
+		return out;
 	}
 
 	public static ImageProcessor applyfromfind(ImageProcessor mat,ImageProcessor k, ImageProcessor z) {
@@ -518,7 +519,7 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		for(int i=1; i<N; i++){
 			
 //			a_k=max(filter2B(Mask,approxI1_I0(a_k.*In./sigma_k2).*In),0);
-			a_k = max(filter2b(Mask, multiply(approxI1_I0(divide(multiply(a_k, In), sigma_k2)), In)), 0);
+			a_k = max(filter2b(Mask, multiply(approxI1_I0(divide(multiply(a_k, In), sigma_k2)), In)), 0.0);
 			
 //			sigma_k2=max(0.5.*filter2B(Mask,abs(In).^2)-a_k.^2./2,0.01);
 			sigma_k2 = max(substract(multiply(filter2b(Mask, pow(abs(In), 2)), 0.5), divide(pow(a_k, 2), 2.0)), 0.01);
