@@ -171,10 +171,10 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 //		if(noiseType == RICIAN){
 		System.out.println("RICIAN...");
 			if(Modo == 1){
-				LocalMean = M1;
+				LocalMean = M1.duplicate();
 			}
 			else if (Modo == 2){
-				LocalMean = M2;
+				LocalMean = M2.duplicate();
 			}
 			else{
 				LocalMean = createImage(In.getWidth(), In.getHeight(), 0.0);
@@ -189,8 +189,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			Fc1 = correct_rice_gauss(SNR);
 			LPF1 = substract(LPF2,Fc1);
 			LPF1 = lpf(LPF1, (float)lpfRice, 2);
-			LPF1.exp();
-			ImageProcessor Mapa1 = LPF1;
+			ImageProcessor Mapa1 = LPF1.duplicate();
+			Mapa1.exp();
 
 //			MapaR=Mapa1.*2./sqrt(2).*exp(-psi(1)./2);
 			MapaR = multiply(divide(multiply(Mapa1, 2.0), Math.sqrt(2.0)), exp_psi_div2);
@@ -204,8 +204,8 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 			lRn = add(multiply(Rn, compare(Rn, 0.0, NEQ)), multiply(compare(Rn, 0.0, EQ),0.001));
 			lRn.log();
 			LPF2 = lpf(lRn,(float)LPF);
-			LPF2.exp();
-			ImageProcessor Mapa2 = LPF2;
+			ImageProcessor Mapa2 = LPF2.duplicate();
+			Mapa2.exp();
 //			MapaG=Mapa2.*2./sqrt(2).*exp(-psi(1)./2);
 			MapaG = multiply(divide(multiply(Mapa2, 2.0), Math.sqrt(2.0)), exp_psi_div2);
 			
@@ -314,12 +314,13 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 		else if (MODO == 2) {
 			int Mx = I.getHeight();
 			int My = I.getWidth();
-			ImageProcessor h = fspecial(My * 2, Mx * 2 , sigma * 2);
+			ImageProcessor h = fspecial(My * 2, Mx * 2 , (float)(sigma * 2.0));
+			h = divide(h, max(h));
 			h = submatrix(h, Mx, h.getHeight() - 1, My, h.getWidth() - 1);
 			
 			if (Mx == 1 ||My == 1) {
 				ImageProcessor lRnF = dct(I);
-				ImageProcessor lRnF2 = multiply(lRnF, h); //TODO complex multipy dimentions
+				ImageProcessor lRnF2 = multiply(lRnF, h);
 				ImageProcessor If = idct(lRnF2);
 				return If;
 			}
@@ -535,20 +536,32 @@ public class RiceHommomorfEst_ implements PlugInFilter {
 	}
 	
 	public static ImageProcessor fspecial(int width, int height, float sigma) {
-		float[][] kernelMatrix = new float[height][width];
-		int x0 = width / 2;
-		int y0 = width / 2;
+		double[][] kernelMatrix = new double[height][width];
+		double x0 = (width - 1.0) / 2.0;
+		double y0 = (height - 1.0) / 2.0;
+		double sigma22 = 2.0 * (double)sigma * (double)sigma;
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
-				kernelMatrix[y][x] = (float) Math.exp(-(((x-x0)*(x-x0))/(2.0*sigma*sigma) + ((y-y0)*(y-y0))/(2.0*sigma*sigma)));
+				kernelMatrix[y][x] = Math.exp(-(((((double)x-x0)*((double)x-x0)) + (((double)y-y0)*((double)y-y0)))/sigma22));
+			}
+		}
+		double sum = 0;
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				sum += kernelMatrix[y][x];
+			}
+		}
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				kernelMatrix[y][x] = (kernelMatrix[y][x] / sum);
 			}
 		}
 		int kernelLength = height * width;
 		float[] kernel = new float[kernelLength];
 		int i = 0;
 		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < height; x++) {
-				kernel[i++] = kernelMatrix[y][x];
+			for (int x = 0; x < width; x++) {
+				kernel[i++] = (float)kernelMatrix[y][x];
 			}
 		}
 		ImageProcessor kernelIP = new FloatProcessor(width, height, kernel);
