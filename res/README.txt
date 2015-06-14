@@ -1,5 +1,6 @@
-0. change hardcoded path in RiceHommomorfEst_.java in 61 line in \
-File file = new File("your_path_to_properties//properties");
-1. copy libraries to ~\ImageJ\jre\lib\ext
-2. copy .java class to ~ImageJ\plugins
-3. plugins > compile & run
+To make plugin RiceHomomorfEst_ work you need to:
+
+1. Copy libraries to ~\ImageJ\jre\lib\ext
+2. Copy .java class to ~ImageJ\plugins
+3. Run ImageJ and click Compile & Run (Plugins > Compile & run)
+4. The plugin is created and is to be used by clicking RiceHomomorfEst_ from Plugin menu.
