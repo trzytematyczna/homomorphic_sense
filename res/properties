@@ -1,4 +1,4 @@
-ex_filter_type = 1
+ex_filter_type = 2
 ex_window_size = 5
 ex_iterations = 10
 lpf_f = 3.4
